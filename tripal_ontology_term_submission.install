@@ -1,0 +1,712 @@
+<?php
+/**
+ * @file
+ * Installation of the ontology_term_submission module
+ */
+
+/**
+ * Implements hook_disable().
+ *
+ * Perform actions when the module is disabled by the site administrator
+ *
+ * @ingroup tripal_ontology_term_submission
+ */
+function tripal_ontology_term_submission_disable() {
+
+  // EXPLANATION: If you are using Drupal Views you want to ensure that any
+  // default views that your module provides are disabled when the module is
+  // disabled. Default views are specified in the
+  // [module name].views.default.inc file. The following code will disable these
+  // views. If your module does not create any default views you can remove the
+  // following code.
+
+  // Disable all default views provided by this module
+  require_once("tripal_ontology_term_submission.views_default.inc");
+  $views = tripal_ontology_term_submission_views_default_views();
+  foreach (array_keys($views) as $view_name) {
+    tripal_disable_view($view_name,FALSE,array('suppress_error' => TRUE));
+  }
+
+}
+
+/**
+ * Implements hook_requirements().
+ *
+ * Performs check to see if all required dependencies are met. Drupal will
+ * automatically check for module dependencies but here you can check for other
+ * requirements.
+ *
+ * @ingroup tripal_ontology_term_submission
+ */
+function tripal_ontology_term_submission_requirements($phase) {
+
+
+  $requirements = array();
+  if ($phase == 'install') {
+    // EXPLANATION: It is essential that Chado be installed for almost all
+    // Tripal modules. Therefore, the following code checks to ensure Chado is
+    // installed and available. If your module does not require that Chado be
+    // installed, you can remove the following check.
+
+    // make sure chado is installed
+    if (!$GLOBALS["chado_is_installed"]) {
+      $requirements ['tripal_ontology_term_submission'] = array(
+          'title' => "tripal_ontology_term_submission",
+          'value' => "ERROR: Chado must be installed before this module can be enabled",
+          'severity' => REQUIREMENT_ERROR,
+      );
+    }
+  }
+  return $requirements;
+}
+
+/**
+ * Implements hook_install().
+ *
+ * Performs actions when the modules is first installed.
+ *
+ * @ingroup tripal_ontology_term_submission
+ */
+function tripal_ontology_term_submission_install() {
+
+  // EXPLANATION: Here is a good place to add any materialized views, controlled
+  // vocabularies CV, databases or CV terms needed by your module.
+  // To keep this module code short, create functions to do each of those tasks
+
+  // add any materialized view
+//  tripal_ontology_term_submission_add_mviews();
+
+
+  // add any controlled vocabularies used by the ontology_term_submission module. You may need
+  // to add a vocabulary if you to set it as default (see next lines of code).
+  // For ontology_term_submission, the Sequence Ontology (SO) is used by the feature module as
+  // the default vocabulary for the feature type_id field. But, that vocabulary
+  // does not yet exist in Chado until after the SO is loaded using the Tripal
+  // OBO loader. But, we can add it here as a place-holder so that we can then
+  // set it as a default vocabulary (see below).
+
+
+  // EXPLANATION: Many tables in Chado have a 'type_id' column which allows for
+  // association of controlled vocabularies to describe the record. Chado places
+  // no restrictions on which vocabularies can be used, but Tripal can be
+  // instructed to provide a default vocabulary for any given field. For
+  // ontology_term_submission, the feature.type_id column will typically use the Sequence
+  // Ontology. In that case, we can use the tripal_set_default_cv() function to
+  // specify the Sequence Ontology (sequence) as the default vocabulary.
+
+  // add any custom tables. For this case we will add an 'ontology_term_submission' table to the
+  // chado schema
+  tripal_ontology_term_submission_add_custom_tables();
+}
+
+
+/**
+ * Implements hook_uninstall().
+ *
+ * Performs actions when the modules is uninstalled.
+ *
+ * @ingroup tripal_ontology_term_submission
+ */
+function tripal_ontology_term_submission_uninstall() {
+
+}
+
+/**
+ * Implementation of hook_schema().
+ *
+ * Provides a list of tables to be created inside of the Drupal schema (the
+ * 'public' schema by default). It uses the Drupal Schema API array structure to
+ * define the table, its indexes and constraints.
+ *
+ * Schema API documentation is here:
+ * https://api.drupal.org/api/drupal/includes%21database%21schema.inc/group/schemaapi/7
+ *
+ * @ingroup tripal_ontology_term_submission
+ */
+function tripal_ontology_term_submission_schema() {
+
+  // EXPLANATION: If your module creates a node type for data in the Chado
+  // database then you probably need to link Drupal nodes with a respective ID
+  // in the Chado table. The following is an ontology_term_submission array for a table that will
+  // link the 'chado_ontology_term_submission' node type (created by this ontology_term_submission module) with a
+  // record in the fake Chado ontology_term_submission table. This table will link the 'nid' of
+  // the node with the 'ontology_term_submission_id' of the ontology_term_submission record.
+  $schema['chado_ontology_term_submission'] = array(
+    'fields' => array(
+      'vid' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0
+       ),
+      'nid' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0
+       ),
+      'ontology_term_submission_id' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0
+      ),
+      'sync_date' => array(
+        'type' => 'int',
+        'not null' => FALSE,
+        'description' => 'UNIX integer sync date/time'
+      ),
+    ),
+    'indexes' => array(
+      'chado_ontology_term_submission_idx1' => array('ontology_term_submission_id')
+    ),
+    'unique keys' => array(
+      'chado_ontology_term_submission_uq1' => array('nid', 'vid'),
+      'chado_ontology_term_submission_uq2' => array('vid')
+    ),
+    'primary key' => array('nid'),
+  );
+
+  return $schema;
+};
+
+/**
+ * Creates a materialized view that stores the type & number of ontology_term_submissions per
+ * organism.
+ *
+ * @ingroup tripal_ontology_term_submission
+ */
+function tripal_ontology_term_submission_add_mviews() {
+
+  // EXPLANATION: use the tripal_add_mview() function to add a materialized view
+  // needed by your module. If you have more than one materialized view it is
+  // best to create a single function for each one and call each function here.
+  // Otherwise this function can become quite long.
+
+}
+/**
+ * Add cvs related to publications
+ *
+ * @ingroup tripal_ontology_term_submission
+ */
+function tripal_ontology_term_submission_add_dbs() {
+  // EXPLANATION: use the tripal_insert_db() function to add any external
+  // databases needed by your module. If the database already exists then the
+  // function will gracefully return.
+/*
+  tripal_insert_db(array(
+    'name' => 'ontology_term_submission_db',
+    'description' => 'An ontology_term_submission database.'
+  ));
+
+ /*
+}
+/**
+ * Add cvs related to publications
+ *
+ * @ingroup tripal_ontology_term_submission
+ */
+function tripal_ontology_term_submission_add_cvs() {
+
+  // EXPLANATION: use the tripal_insert_cv() function to add any controlled
+  // vocabularies needed by your module. If the vocabulary already exists then
+  // the function will gracefully return. Chado conventions use a singular name
+  // for CV names (not plural).
+/*
+  tripal_insert_cv(
+    'ontology_term_submission_property',
+    'Contains property terms for ontology_term_submissions.'
+  );
+
+  tripal_insert_cv(
+    'ontology_term_submission_type',
+    'Contains terms describing types of ontology_term_submissions.'
+  );
+
+  tripal_insert_cv(
+   'ontology_term_submission_relationship',
+   'Contains terms for describing relationship types between ontology_term_submissions.'
+  );
+
+
+  tripal_insert_cv(
+   'Schmidtea_mediterranea_Developmental_Stages',
+   'Contains terms describing Developmenal Stages.'
+  );
+
+  tripal_insert_cv(
+   'Planarian_Anatomy',
+   'Contains terms describing related terms to new term.'
+  );
+*/
+}
+
+/**
+ * Adds controlled vocabulary terms needed by this module.
+ *
+ * @ingroup tripal_ontology_term_submission
+ */
+function tripal_ontology_term_submission_add_cvterms() {
+
+  // EXPLANATION: for our test module to work we need to add some terms to our
+  // ontology_term_submission_type controlled vocabulary. Ideally we should have a full OBO file
+  // for loading but sometimes we just have a small list that won't really
+  // change so we can add those terms here.
+
+/*
+  tripal_insert_cvterm(array(
+    'id'         => 'test',         // the term accession
+    'name'       => 'Test type',    // the human readable term name
+    'cv_name'    => 'ontology_term_submission_type', // the CV name this term belongs to.
+    'definition' => 'A test type for the ontology_term_submission module.',
+    'db_name'    => 'ontology_term_submission_db',   // the database in which the term is found.
+  ));
+
+*/
+}
+
+/**
+ * Add custom tables to Chado that are required by this module
+ *
+ * @ingroup tripal_ontology_term_submission
+ */
+function tripal_ontology_term_submission_add_custom_tables() {
+
+  // EXPLANATION: for this ontology_term_submission module we will create a set of ontology_term_submission tables
+  // that mimic Chado tables. These tables are:
+  //
+  //   1) ontology_term_submission     (for storing the primary ontology_term_submission records)
+  //   2) ontology_term_submissionprop (for sorting properties about the ontology_term_submission)
+  //   3) ontology_term_submission_relationship (for storing relationships about ontology_term_submissions)
+  //   4) ontology_term_submission_dbxref (for storing cross-references about an ontology_term_submission)
+  //
+  // To make the code easier to read, each table is created by a separate
+  // function called here:
+
+  tripal_ontology_term_submission_add_ontology_term_submission_table();
+//  tripal_ontology_term_submission_add_ontology_term_submissionprop_table();
+  tripal_ontology_term_submission_add_ontology_term_submission_relationship_table();
+//  tripal_ontology_term_submission_add_ontology_term_submission_dbxref_table();
+}
+
+/**
+ * Adds the 'ontology_term_submission' custom table to Chado.
+ *
+ * @ingroup tripal_ontology_term_submission
+ */
+function tripal_ontology_term_submission_add_ontology_term_submission_table() {
+  // EXPLANATION: use the Drupal Schema API to describe the custom table. Then
+  // add the table using the chado_create_custom_table() function.
+  $schema = array(
+    'table' => 'ontology_term_submission',
+    'fields' => array(
+      'ontology_term_submission_id' => array(
+        'type' => 'serial',
+        'not null' => true,
+      ),
+      'name' => array(
+        'type' => 'varchar',
+        'length' => '255',
+        'not null' => TRUE,
+      ),
+      'defintion' => array(
+        'type' => 'text',
+        'length' => '5000',
+        'not null' => TRUE,
+      ),
+      'defintion_ref' => array(
+        'type' => 'varchar',
+        'length' => '255',
+        'not null' => TRUE,
+      ),
+      'term_xref' => array(
+        'type' => 'varchar',
+        'length' => '255',
+      ),
+      'type_id' => array(
+        'type' => 'int',
+        'not null' => true,
+      ),
+      'seeAlso_url' => array(
+        'type' => 'varchar',
+        'length' => '255',
+      ),
+      'contact_name' => array(
+        'type' => 'text',
+      ),
+      'contact_email' => array(
+        'type' => 'text',
+      ),
+      'comments' => array(
+        'type' => 'text',
+      ),
+      'parent_cvterm_id_1' => array(
+        'type' => 'int',
+      ),
+      'parent_cvterm_name_1' => array(
+        'type' => 'text',
+      ),
+      'relation_cvterm_id_1' => array(
+        'type' => 'int',
+      ),
+      'relation_cvterm_name_1' => array(
+        'type' => 'text',
+      ),
+      'parent_cvterm_id_2' => array(
+        'type' => 'int',
+      ),
+      'parent_cvterm_name_2' => array(
+        'type' => 'text',
+      ),
+      'relation_cvterm_id_2' => array(
+        'type' => 'int',
+      ),
+      'relation_cvterm_name_2' => array(
+        'type' => 'text',
+      ),
+      'parent_cvterm_id_3' => array(
+        'type' => 'int',
+      ),
+      'parent_cvterm_name_3' => array(
+        'type' => 'text',
+      ),
+      'relation_cvterm_id_3' => array(
+        'type' => 'int',
+      ),
+      'relation_cvterm_name_3' => array(
+        'type' => 'text',
+      ),
+    ),
+    'primary key' => array(
+      0 => 'ontology_term_submission_id',
+    ),
+    'unique keys' => array(
+      'ontology_term_submission_uq1' => array(
+        0 => 'name',
+        1 => 'contact_name',
+      ),
+    ),
+    'indexes' => array(
+      'ontology_term_submission_idx1' => array(
+        0 => 'ontology_term_submission_id',
+      ),
+      'ontology_term_submission_idx2' => array(
+        0 => 'name',
+        1 => 'contact_name',
+      ),
+    ),
+    'foreign keys' => array(
+      'parent_cvterm_id_1' => array(
+        'table' => 'cvterm',
+        'columns' => array(
+          'parent_cvterm_id_1' => 'cvterm_id',
+        ),
+      'parent_cvterm_id_2' => array(
+        'table' => 'cvterm',
+        'columns' => array(
+          'parent_cvterm_id_2' => 'cvterm_id',
+        ),
+      'parent_cvterm_id_3' => array(
+        'table' => 'cvterm',
+        'columns' => array(
+          'parent_cvterm_id_3' => 'cvterm_id',
+        ),
+      'relation_cvterm_id_1' => array(
+        'table' => 'cvterm',
+        'columns' => array(
+          'relation_cvterm_id_1' => 'cvterm_id',
+        ),
+      'relation_cvterm_id_2' => array(
+        'table' => 'cvterm',
+        'columns' => array(
+          'relation_cvterm_id_2' => 'cvterm_id',
+        ),
+      'relation_cvterm_id_3' => array(
+        'table' => 'cvterm',
+        'columns' => array(
+          'relation_cvterm_id_3' => 'cvterm_id',
+        ),
+      'type_id' => array(
+        'table' => 'cv',
+        'columns' => array(
+          'type_id' => 'cv_id',
+        ),
+      ),
+      ),
+    ),
+    // EXPLANATION: the 'referring_tables' array is the list of tables that have
+    // a foreign key relationships with this table. This information is required
+    // for the Tripal API to be able to expand tables in templates.
+    'referring_tables' => array(
+      0 => 'ontology_term_submission_relationship',
+//      1 => 'ontology_term_submissionprop',
+//      2 => 'ontology_term_submission_dbxref',
+    ),
+  );
+  chado_create_custom_table('ontology_term_submission', $schema, TRUE);
+}
+/**
+ * Adds the 'ontology_term_submission_relationship' custom table to Chado.
+ *
+ * @ingroup tripal_ontology_term_submission
+ */
+function tripal_ontology_term_submission_add_ontology_term_submissionprop_table() {
+  // EXPLANATION: use the Drupal Schema API to describe the custom table. Then
+  // add the table using the chado_create_custom_table() function.
+/*
+  // Add the ontology_term_submissionprop table
+  $schema =  array(
+    'table' => 'ontology_term_submissionprop',
+    'fields' => array(
+      'ontology_term_submissionprop_id' => array(
+        'type' => 'serial',
+        'not null' => TRUE,
+      ),
+      'ontology_term_submission_id' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+      ),
+      'type_id' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+      ),
+      'value' => array(
+        'type' => 'text',
+        'not null' => FALSE,
+      ),
+      'rank' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+      ),
+    ),
+    'primary key' => array(
+      0 => 'ontology_term_submissionprop_id',
+    ),
+    'unique keys' => array(
+      'ontology_term_submission_id_type_id_rank' => array(
+        0 => 'ontology_term_submission_id',
+        1 => 'type_id',
+        2 => 'rank',
+      ),
+    ),
+    'foreign keys' => array(
+      'cvterm' => array(
+        'table' => 'cvterm',
+        'columns' => array(
+          'type_id' => 'cvterm_id',
+        ),
+      ),
+      'ontology_term_submission' => array(
+        'table' => 'ontology_term_submission',
+        'columns' => array(
+          'ontology_term_submission_id' => 'ontology_term_submission_id',
+        ),
+      ),
+    ),
+  );
+  chado_create_custom_table('ontology_term_submissionprop', $schema, TRUE);
+*/
+
+}
+
+/**
+ * Adds the 'ontology_term_submission_relationship' custom table to Chado.
+ *
+ * @ingroup tripal_ontology_term_submission
+ */
+function tripal_ontology_term_submission_add_ontology_term_submission_relationship_table() {
+  // EXPLANATION: use the Drupal Schema API to describe the custom table. Then
+  // add the table using the chado_create_custom_table() function.
+// subject id is ontology_term_submission_id
+// object id is existing term
+  $schema =  array(
+    'table' => 'ontology_term_submission_relationship',
+    'fields' => array(
+      'ontology_term_submission_relationship_id' => array(
+        'type' => 'serial',
+        'not null' => TRUE,
+      ),
+      'subject_id' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+      ),
+      'object_id' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+      ),
+      'type_id' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+      ),
+      'value' => array(
+        'type' => 'text',
+        'not null' => FALSE,
+      ),
+      'rank' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+    ),
+    'primary key' => array(
+      0 => 'ontology_term_submission_relationship_id',
+    ),
+    'unique keys' => array(
+      'ontology_term_submission_relationship_c1' => array(
+        0 => 'subject_id',
+        1 => 'object_id',
+        2 => 'type_id',
+        3 => 'rank',
+      ),
+    ),
+    'indexes' => array(
+      'ontology_term_submission_relationship_idx1' => array(
+        0 => 'subject_id',
+      ),
+      'ontology_term_submission_relationship_idx2' => array(
+        0 => 'object_id',
+      ),
+      'ontology_term_submission_relationship_idx3' => array(
+        0 => 'type_id',
+      ),
+    ),
+    'foreign keys' => array(
+      'cvterm' => array(
+        'table' => 'cvterm',
+        'columns' => array(
+          'type_id' => 'cvterm_id',
+        ),
+      ),
+      'ontology_term_submission' => array(
+        'table' => 'ontology_term_submission',
+        'columns' => array(
+          'subject_id' => 'ontology_term_submission_id',
+          'object_id' => 'ontology_term_submission_id',
+        ),
+      ),
+    ),
+  );
+  chado_create_custom_table('ontology_term_submission_relationship', $schema, TRUE);
+}
+
+/**
+ * Adds the 'ontology_term_submission_dbxref' custom table to Chado.
+ *
+ * @ingroup tripal_ontology_term_submission
+ */
+function tripal_ontology_term_submission_add_ontology_term_submission_dbxref_table() {
+
+  // EXPLANATION: use the Drupal Schema API to describe the custom table. Then
+  // add the table using the chado_create_custom_table() function.
+
+/*
+  $schema =  array(
+    'table' => 'ontology_term_submission_dbxref',
+    'fields' => array(
+      'ontology_term_submission_dbxref_id' => array(
+        'type' => 'serial',
+        'not null' => TRUE,
+      ),
+      'ontology_term_submission_id' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+      ),
+      'dbxref_id' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+      ),
+      'is_current' => array(
+        'type' => 'int',
+        'size' => 'tiny',
+        'not null' => TRUE,
+        'default' => 1,
+      ),
+    ),
+    'primary key' => array(
+      0 => 'ontology_term_submission_dbxref_id',
+    ),
+    'unique keys' => array(
+      'ontology_term_submission_dbxref_unq1' => array(
+        0 => 'ontology_term_submission_id',
+        1 => 'dbxref_id',
+      ),
+    ),
+    'indexes' => array(
+      'ontology_term_submission_dbxref_idx1' => array(
+        0 => 'ontology_term_submission_id',
+      ),
+      'ontology_term_submission_dbxref_idx2' => array(
+        0 => 'dbxref_id',
+      ),
+    ),
+    'foreign keys' => array(
+      'dbxref' => array(
+        'table' => 'dbxref',
+        'columns' => array(
+          'dbxref_id' => 'dbxref_id',
+        ),
+      ),
+      'ontology_term_submission' => array(
+        'table' => 'ontology_term_submission',
+        'columns' => array(
+          'ontology_term_submission_id' => 'ontology_term_submission_id',
+        ),
+      ),
+    ),
+  );
+  chado_create_custom_table('ontology_term_submission_dbxref', $schema, TRUE);
+*/
+}
+/**
+ * This is the required update for tripal_ontology_term_submission.
+ */
+function tripal_ontology_term_submission_update_7200() {
+  // EXPLANATION: as you create new releases of your module you may find that
+  // tables your module created, or data may need to be adjusted. This function
+  // allows you to do that. This function is executed using the
+  // http://[your site]/update.php  URL or using the drush command 'updatedb'.
+  // This function should be named according to the instructions provided here:
+  // https://api.drupal.org/api/drupal/modules%21system%21system.api.php/function/hook_update_N/7
+  //
+  // Make sure we have the full API loaded this will help during a
+  // site upgrade when the tripal_core module is disabled.
+/*
+
+  module_load_include('module', 'tripal_core', 'tripal_core');
+  tripal_core_import_api();
+
+  // it is good to wrap any database changes inside of a try catch block:
+  try {
+   // perform database changes
+  }
+  catch (\PDOException $e) {
+    $error = $e->getMessage();
+    throw new DrupalUpdateException('Could not apply updates: '. $error);
+  }
+
+*/
+}
+
+
+/**
+ * Implementation of hook_update_dependencies().
+ *
+ * It specifies a list of other modules whose updates must be run prior to
+ * this one.  It also ensures the the Tripal API is in scope for site
+ * upgrades when tripal_core is disabled.
+ */
+function tripal_ontology_term_submission_update_dependencies() {
+/*
+  $dependencies = array();
+
+  // EXPLANATION: here we can specify which modules must be updated prior to
+  // applying the updates in this module. This is useful because it prevents
+  // updates from being executed out of order. The following ontology_term_submission code shows
+  // that the 'tripal_ontology_term_submission' module update number 7200 must be executed after
+  // the 'tripal_cv' module's 7200 update.
+  $dependencies['tripal_ontology_term_submission'][7200] = array(
+    'tripal_cv' => 7200
+  );
+
+  return $dependencies;
+*/
+}
