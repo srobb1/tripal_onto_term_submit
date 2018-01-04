@@ -2,7 +2,7 @@
 ; Provide details about your module in this file. Instruction for setup of this
 ; file can be found here: https://drupal.org/node/542202
 
-name = Tripal Ontology Term Submission Request
+name = Tripal Ontology Term Submission Request 3
 description = A module for creating a form for Ontology term requests
 
 ;
@@ -13,7 +13,7 @@ core = 7.x
 ;
 ; The computer-readable name for this module
 ;
-project = tripal_ontology_term_submission
+project = tripal_onto_term_submit
 
 ;
 ; In order for this module to appear in the 'Tripal Extensions' section when

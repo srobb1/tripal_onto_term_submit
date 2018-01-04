@@ -12,9 +12,9 @@
 // file, the theme file, or files with functions for new node types.  Try to
 // include other files only when needed so as to reduce the loading time
 // for the module.
-//require('api/tripal_ontology_term_submission.api.inc');
-//require('theme/tripal_ontology_term_submission.theme.inc');
-require('includes/tripal_ontology_term_submission.chado_node.inc');
+//require('api/tripal_onto_term_submit.api.inc');
+//require('theme/tripal_onto_term_submit.theme.inc');
+require('includes/tripal_onto_term_submit.chado_node.inc');
 
 
 /**
@@ -22,37 +22,37 @@ require('includes/tripal_ontology_term_submission.chado_node.inc');
  *
  * Set the permission types that this module uses.
  *
- * @ingroup tripal_ontology_term_submission
+ * @ingroup tripal_onto_term_submit
  */
-function tripal_ontology_term_submission_permission() {
+function tripal_onto_term_submit_permission() {
 
   // EXPLANATION:  here we want to setup any of the permission types that this
-  // module needs. Our ontology_term_submission module creates a new chado node type called
-  // 'chado_ontology_term_submission'. Therefore, we need permissions to view, edit, delete,
+  // module needs. Our onto_term_submit module creates a new chado node type called
+  // 'chado_onto_term_submit'. Therefore, we need permissions to view, edit, delete,
   // create our new node type. Additionally, we want to add a permission that
   // allows for administration of this module. These permissions will appear in
   // the 'People' -> 'Permissions' configuration page and allow the site admin
   // to specify which user roles are allowed to perform specific actions.
   return array(
-    'access chado_ontology_term_submission content' => array(
+    'access chado_onto_term_submit content' => array(
       'title' => t('View Ontology Term Submissions'),
-      'description' => t('Allow users to view ontology_term_submission pages.'),
+      'description' => t('Allow users to view onto_term_submit pages.'),
     ),
-    'create chado_ontology_term_submission content' => array(
+    'create chado_onto_term_submit content' => array(
       'title' => t('Create Ontology Term Submissions'),
-      'description' => t('Allow users to create new ontology_term_submission pages.'),
+      'description' => t('Allow users to create new onto_term_submit pages.'),
     ),
-    'delete chado_ontology_term_submission content' => array(
+    'delete chado_onto_term_submit content' => array(
       'title' => t('Delete Ontology Term Submissions'),
-      'description' => t('Allow users to delete ontology_term_submission pages.'),
+      'description' => t('Allow users to delete onto_term_submit pages.'),
     ),
-    'edit chado_ontology_term_submission content' => array(
+    'edit chado_onto_term_submit content' => array(
       'title' => t('Edit Ontology Term Submissions'),
-      'description' => t('Allow users to edit ontology_term_submission pages.'),
+      'description' => t('Allow users to edit onto_term_submit pages.'),
     ),
-    'administer tripal ontology_term_submission' => array(
+    'administer tripal onto_term_submit' => array(
       'title' => t('Administer Ontology Term Submissions'),
-      'description' => t('Allow users to administer all ontology_term_submissions.'),
+      'description' => t('Allow users to administer all onto_term_submits.'),
     ),
   );
 }
@@ -62,9 +62,9 @@ function tripal_ontology_term_submission_permission() {
  *
  * Specifies menu items and URLs used by this module.
  *
- * @ingroup tripal_ontology_term_submission
+ * @ingroup tripal_onto_term_submit
  */
-function tripal_ontology_term_submission_menu() {
+function tripal_onto_term_submit_menu() {
   $items = array();
 
   // EXPLANATION:  the $items array should be populated to contain a list of
@@ -83,19 +83,19 @@ function tripal_ontology_term_submission_menu() {
   // with the path set to 'admin/tripal/extension/[module name]'. This will
   // place the menu item in the 'Tripal' -> 'Extension Modules' page. Because
   // this is an administrative menu item we must be sure to set the
-  // 'access arguments' to be 'administer tripal ontology_term_submission' which is a permission
-  // type we created in the tripal_ontology_term_submission_permissions() function above.
-  $items['admin/tripal/extension/tripal_ontology_term_submission'] = array(
+  // 'access arguments' to be 'administer tripal onto_term_submit' which is a permission
+  // type we created in the tripal_onto_term_submit_permissions() function above.
+  $items['admin/tripal/extension/tripal_onto_term_submit'] = array(
     'title' => 'Ontology Term Submission',
-    'description' => 'Module for managing Ontology term sumbissions',
-    'page callback' => 'tripal_ontology_term_submission_admin_ontology_term_submissions_listing',
-    'access arguments' => array('administer tripal ontology_term_submission'),
+    'description' => 'Module for managing Ontology term sumbissions 3',
+    'page callback' => 'tripal_onto_term_submit_admin_examples_listing',
+    'access arguments' => array('administer tripal onto_term_submit'),
     'type' => MENU_NORMAL_ITEM,
     // We include the file where the 'page callback' function
     // is located.  This removes the need to include all of the
     // include files at the top of the module, and speeds
     // module loading time.
-    'file' => '/includes/tripal_ontology_term_submission.admin.inc',
+    'file' => '/includes/tripal_onto_term_submit.admin.inc',
   );
 
   // EXPLANATION: all extension modules should provide help documentation to
@@ -105,13 +105,13 @@ function tripal_ontology_term_submission_menu() {
   // Here the 'page callback' specifies that we are using Drupal's theme
   // function and the 'page_arguments' indicate the name of the template file
   // Thus, all help documentation should be provided in the
-  // [module name]/theme/tripal_ontology_term_submission_help.tpl.php file.
-  $items['admin/tripal/extension/tripal_ontology_term_submission/help'] = array(
+  // [module name]/theme/tripal_onto_term_submit_help.tpl.php file.
+  $items['admin/tripal/extension/tripal_onto_term_submit/help'] = array(
     'title' => 'Help',
     'description' => 'Basic Description of Tripal Library Module Functionality',
     'page callback' => 'theme',
-    'page arguments' => array('tripal_ontology_term_submission_help'),
-    'access arguments' => array('administer tripal ontology_term_submission'),
+    'page arguments' => array('tripal_onto_term_submit_help'),
+    'access arguments' => array('administer tripal onto_term_submit'),
     'type' => MENU_LOCAL_TASK,
     'weight' => 10,
   );
@@ -124,13 +124,13 @@ function tripal_ontology_term_submission_menu() {
   // configuration settings. Therefore the 'page callback' uses the
   // drupal_get_form() function and the 'page argument' indicates the form
   // to call is named 'tripal_eample_admin'. The function that describes
-  // to form is in the includes/tripal_ontology_term_submission.admin.inc file.
-  $items['admin/tripal/extension/tripal_ontology_term_submission/configuration'] = array(
+  // to form is in the includes/tripal_onto_term_submit.admin.inc file.
+  $items['admin/tripal/extension/tripal_onto_term_submit/configuration'] = array(
     'title' => 'Settings',
     'description' => 'Configure the Tripal Library module',
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('tripal_ontology_term_submission_admin'),
-    'access arguments' => array('administer tripal ontology_term_submission'),
+    'page arguments' => array('tripal_onto_term_submit_admin'),
+    'access arguments' => array('administer tripal onto_term_submit'),
     'type' => MENU_LOCAL_TASK,
     'weight' => 5,
   );
@@ -140,12 +140,12 @@ function tripal_ontology_term_submission_menu() {
   // to quickly provide syncing functionality. See the API documentation here
   // for more information on how that is setup:
   // http://api.tripal.info/api/tripal/tripal_core%21api%21tripal_core.chado_nodes.api.inc/function/chado_node_sync_form/2.x
-  $items['admin/tripal/extension/tripal_ontology_term_submission/sync'] = array(
+  $items['admin/tripal/extension/tripal_onto_term_submit/sync'] = array(
     'title' => ' Sync',
-    'description' => 'Create pages on this site for ontology_term_submissions stored in Chado',
+    'description' => 'Create pages on this site for onto_term_submits stored in Chado',
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('chado_node_sync_form', 'tripal_ontology_term_submission', 'chado_ontology_term_submission'),
-    'access arguments' => array('administer tripal ontology_term_submission'),
+    'page arguments' => array('chado_node_sync_form', 'tripal_onto_term_submit', 'chado_onto_term_submit'),
+    'access arguments' => array('administer tripal onto_term_submit'),
     'type' => MENU_LOCAL_TASK,
     'weight' => 2,
   );
@@ -162,12 +162,12 @@ function tripal_ontology_term_submission_menu() {
   // this allows for a module to support TOC management when there are multiple
   // content types provided by the module, as the content type is specified
   // in the menu path.
-  $items['admin/tripal/chado/tripal_ontology_term_submission/chado_ontology_term_submission_toc'] = array(
+  $items['admin/tripal/chado/tripal_onto_term_submit/chado_onto_term_submit_toc'] = array(
     'title' => ' TOC',
-    'description' => 'Manage the table of contents for ontology_term_submission nodes.',
+    'description' => 'Manage the table of contents for onto_term_submit nodes.',
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('tripal_core_content_type_toc_form', 'chado_ontology_term_submission'),
-    'access arguments' => array('administer tripal ontology_term_submission'),
+    'page arguments' => array('tripal_core_content_type_toc_form', 'chado_onto_term_submit'),
+    'access arguments' => array('administer tripal onto_term_submit'),
     'type' => MENU_LOCAL_TASK,
     'file' =>  'includes/tripal_core.toc.inc',
     'file path' => drupal_get_path('module', 'tripal_core'),
@@ -184,9 +184,9 @@ function tripal_ontology_term_submission_menu() {
  * automatically includes the tripal_db.views.inc where all the views
  * integration code is found.
  *
- * @ingroup tripal_ontology_term_submission
+ * @ingroup tripal_onto_term_submit
  */
-function tripal_ontology_term_submission_views_api() {
+function tripal_onto_term_submit_views_api() {
   return array(
     'api' => 3.0,
   );
@@ -198,9 +198,9 @@ function tripal_ontology_term_submission_views_api() {
  * We create theme functions to allow users of the module to customize the look
  * and feel of the output generated in this module.
  *
- * @ingroup tripal_ontology_term_submission
+ * @ingroup tripal_onto_term_submit
  */
-function tripal_ontology_term_submission_theme($existing, $type, $theme, $path) {
+function tripal_onto_term_submit_theme($existing, $type, $theme, $path) {
   $core_path = drupal_get_path('module', 'tripal_core');
 
   // EXPLANATION: this function defines all of the functions and templates that
@@ -222,7 +222,7 @@ function tripal_ontology_term_submission_theme($existing, $type, $theme, $path) 
     // User's will cycle through content on the page by clicking the links in
     // the table of contents. If you do not want to use the default Tripal
     // template you can change this array to your liking.
-    'node__chado_ontology_term_submission' => array(
+    'node__chado_onto_term_submit' => array(
       'template' => 'node--chado-generic',
       'render element' => 'node',
       'base hook' => 'node',
@@ -231,9 +231,9 @@ function tripal_ontology_term_submission_theme($existing, $type, $theme, $path) 
 
     // EXPLANATION: the following defines all of the template files used for
     // this module. Templates are named with underscores separating words, and
-    // correspond directly to a file with the extension '.tpl.php'. For ontology_term_submission
-    // the 'tripal_ontology_term_submission_base' template will have a corresponding
-    // tripal_ontology_term_submission_base.tpl.php file where the display code is housed.
+    // correspond directly to a file with the extension '.tpl.php'. For onto_term_submit
+    // the 'tripal_onto_term_submit_base' template will have a corresponding
+    // tripal_onto_term_submit_base.tpl.php file where the display code is housed.
     // The only required templates are the 'base',  'help' and 'teaser'
     // templates. The base template provides the basic information about the
     // record in Chado. The 'help' template provides the administrative help
@@ -241,49 +241,49 @@ function tripal_ontology_term_submission_theme($existing, $type, $theme, $path) 
     // can be used as short description of the record in aggregated lists.
 
     // the base template
-    'tripal_ontology_term_submission_base' => array(
+    'tripal_onto_term_submit_base' => array(
       'variables' => array('node' => NULL),
-      'template' => 'tripal_ontology_term_submission_base',
+      'template' => 'tripal_onto_term_submit_base',
       'path' => "$path/theme/templates",
     ),
     // the help template
-    'tripal_ontology_term_submission_help' => array(
-      'template' => 'tripal_ontology_term_submission_help',
+    'tripal_onto_term_submit_help' => array(
+      'template' => 'tripal_onto_term_submit_help',
       'variables' =>  array(NULL),
       'path' => "$path/theme/templates",
     ),
     // the teaser template.
-    'tripal_ontology_term_submission_teaser' => array(
+    'tripal_onto_term_submit_teaser' => array(
       'variables' => array('node' => NULL),
-      'template' => 'tripal_ontology_term_submission_teaser',
+      'template' => 'tripal_onto_term_submit_teaser',
       'path' => "$path/theme/templates",
     ),
 
 
     // EXPLANATION: Typically, a different template is created for each subset
     // of data.
-    // For ontology_term_submission, most Chado tables have a 'XXXXprop', 'XXXX_cvterm',
+    // For onto_term_submit, most Chado tables have a 'XXXXprop', 'XXXX_cvterm',
     // 'XXXX_dbxref', 'XXXX_synonyms', 'XXXX_relationships' tables. Therefore,
     // a template is created to display data from each of these tables.
 
-    'tripal_ontology_term_submission_properties' => array(
+    'tripal_onto_term_submit_properties' => array(
       'variables' => array('node' => NULL),
-      'template' => 'tripal_ontology_term_submission_properties',
+      'template' => 'tripal_onto_term_submit_properties',
       'path' => "$path/theme/templates",
     ),
-    'tripal_ontology_term_submission_references' => array(
+    'tripal_onto_term_submit_references' => array(
       'variables' => array('node' => NULL),
-      'template' => 'tripal_ontology_term_submission_references',
+      'template' => 'tripal_onto_term_submit_references',
       'path' => "$path/theme/templates",
     ),
-    'tripal_ontology_term_submission_relationships' => array(
+    'tripal_onto_term_submit_relationships' => array(
       'variables' => array('node' => NULL),
-      'template' => 'tripal_ontology_term_submission_relationships',
+      'template' => 'tripal_onto_term_submit_relationships',
       'path' => "$path/theme/templates",
     ),
 
     // EXPLANATION: sometimes a module may want to add content to another
-    // modules' node types. For ontology_term_submission, the feature module does this by
+    // modules' node types. For onto_term_submit, the feature module does this by
     // adding a 'feature summary' data to an organism. To add data to another
     // module's node, the templates belong to this module and are specified in
     // the same way as above. However, the naming of the template is changed to
@@ -291,9 +291,9 @@ function tripal_ontology_term_submission_theme($existing, $type, $theme, $path) 
     // our record name:
 
     // tripal_organism templates
-    'tripal_organism_ontology_term_submissions' => array(
+    'tripal_organism_onto_term_submits' => array(
       'variables' => array('node' => NULL),
-      'template' => 'tripal_organism_ontology_term_submissions',
+      'template' => 'tripal_organism_onto_term_submits',
       'path' => "$path/theme/templates",
     ),
   );
@@ -306,17 +306,17 @@ function tripal_ontology_term_submission_theme($existing, $type, $theme, $path) 
  *
  * Adds a help page to the module list
  */
-function tripal_ontology_term_submission_help ($path, $arg) {
+function tripal_onto_term_submit_help ($path, $arg) {
 
-  // EXPLANATION: in the tripal_ontology_term_submission_menu() function above we created a menu
+  // EXPLANATION: in the tripal_onto_term_submit_menu() function above we created a menu
   // item for the help documentation. The menu item specified a function that
   // should be called when the menu item is clicked. This is that function. But,
   // rather than place HTML code in this function we want to have our help
   // documentation in a template file. We specified in the
-  // tripal_ontology_term_submission_theme() function that we have a template file so now we want
+  // tripal_onto_term_submit_theme() function that we have a template file so now we want
   // to use get the contents of that template file and return it.
-  if ($path == 'admin/help#tripal_ontology_term_submission') {
-    return theme('tripal_ontology_term_submission_help', array());
+  if ($path == 'admin/help#tripal_onto_term_submit') {
+    return theme('tripal_onto_term_submit_help', array());
   }
 }
 
@@ -324,9 +324,9 @@ function tripal_ontology_term_submission_help ($path, $arg) {
 /**
  * Implements hook_cron()
  *
- * @ingroup tripal_ontology_term_submission
+ * @ingroup tripal_onto_term_submit
  */
-function tripal_ontology_term_submission_cron() {
+function tripal_onto_term_submit_cron() {
 
   // EXPLANATION: here we can add any code that needs to be executed when the
   // Drupal cron is run.
@@ -342,15 +342,15 @@ function tripal_ontology_term_submission_cron() {
  * https://api.drupal.org/api/drupal/includes!form.inc/group/form_api/7
  *
  */
-function tripal_ontology_term_submission_form_alter(&$form, &$form_state, $form_id) {
+function tripal_onto_term_submit_form_alter(&$form, &$form_state, $form_id) {
 
-  if ($form_id == "chado_ontology_term_submission_node_form") {
+  if ($form_id == "chado_onto_term_submit_node_form") {
 
     // EXPLANATION:  The hook_form_alter() Drupal hook is used to alter a form
     // before it is displayed. This allows any module to provide new form
     // elements or change the form that another module creates. We do not need
     // to alter a form created by another module, but we do want to alter the
-    // form for our new node type. For ontology_term_submission, all node types will
+    // form for our new node type. For onto_term_submit, all node types will
     // automatically have a 'Preview' button. For inserting or updating data
     // for Chado we don't really need a Preview button and it complicates the
     // form. So, we use the following code to disable the Preview button. If

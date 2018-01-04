@@ -13,21 +13,21 @@
  *  created by this module. If your module does not create any node types then
  *  this function is not required.
  *
- * @ingroup tripal_ontology_term_submission
+ * @ingroup tripal_onto_term_submit
  */
-function tripal_ontology_term_submission_node_info() {
+function tripal_onto_term_submit_node_info() {
   $nodes = array();
 
   // EXPLANATION: this array describes all of the node types that are created
-  // by this module. For many Tripal modules (e.g. tripal_ontology_term_submission, tripal_stock,
+  // by this module. For many Tripal modules (e.g. tripal_onto_term_submit, tripal_stock,
   // tripal_library, tripal_pub, etc.) new node types are created. It is
   // customary to name all new node types that interact with data in Chado
   // with a 'chado_' prefix.
 
-  $nodes['chado_ontology_term_submission'] = array(
+  $nodes['chado_onto_term_submit'] = array(
     'name'        => t('Ontology Term Submission'),
-    'base'        => 'chado_ontology_term_submission',
-    'description' => t('A record from the fake chado ontology_term_submission table'),
+    'base'        => 'chado_onto_term_submit',
+    'description' => t('A record from the fake chado onto_term_submit table'),
     'has_title'   => TRUE,
     'locked'      => TRUE,
     // EXPLANATION: This section of the node type array specifies how Tripal
@@ -37,10 +37,10 @@ function tripal_ontology_term_submission_node_info() {
     // Drupal nodes to records in Chado. Syncing is the process of creating
     // Drupal nodes and linking them to the appropriate record.
     'chado_node_api' => array(
-      // the base table name (e.g. ontology_term_submission, ontology_term_submission, contact)
-      'base_table' => 'ontology_term_submission',
+      // the base table name (e.g. onto_term_submit, onto_term_submit, contact)
+      'base_table' => 'onto_term_submit',
       // the node type hook prefix
-      'hook_prefix' => 'chado_ontology_term_submission',
+      'hook_prefix' => 'chado_onto_term_submit',
       'record_type_title' => array(
         // how to refer to the record
         'singular' => t('Ontology Term Submission'),
@@ -60,8 +60,8 @@ function tripal_ontology_term_submission_node_info() {
 /**
  * Implement hook_access(). This hook provides instructions to Drupal for which
  * users can access the custom content types created in the function above. The
- * available permissions are set in the chado_ontology_term_submission_permissions() hook in the
- * tripal_ontology_term_submission.module file. This hook is not needed if no node types were
+ * available permissions are set in the chado_onto_term_submit_permissions() hook in the
+ * tripal_onto_term_submit.module file. This hook is not needed if no node types were
  * defined in the hook_node_info() hook.
  *
  * @return
@@ -70,33 +70,33 @@ function tripal_ontology_term_submission_node_info() {
  * value is TRUE then access is granted regardless of any other rules that might
  * be implemented by other modules.
  */
-function tripal_ontology_term_submission_node_access($node, $op, $account) {
+function tripal_onto_term_submit_node_access($node, $op, $account) {
   $node_type = $node;
   if (is_object($node)) {
     $node_type = $node->type;
   }
-  // EXPLANATION:  in the tripal_ontology_term_submission_permissions() function we created the
+  // EXPLANATION:  in the tripal_onto_term_submit_permissions() function we created the
   // permission types that are used here to check for access permissions to the
   // 'chado_exmaple' node type.
-  if($node_type == 'chado_ontology_term_submission') {
+  if($node_type == 'chado_onto_term_submit') {
     if ($op == 'create') {
-      if (!user_access('create chado_ontology_term_submission content', $account)) {
+      if (!user_access('create chado_onto_term_submit content', $account)) {
         return NODE_ACCESS_DENY;
       }
       return NODE_ACCESS_ALLOW;
     }
     if ($op == 'update') {
-      if (!user_access('edit chado_ontology_term_submission content', $account)) {
+      if (!user_access('edit chado_onto_term_submit content', $account)) {
         return NODE_ACCESS_DENY;
       }
     }
     if ($op == 'delete') {
-      if (!user_access('delete chado_ontology_term_submission content', $account)) {
+      if (!user_access('delete chado_onto_term_submit content', $account)) {
         return NODE_ACCESS_DENY;
       }
     }
     if ($op == 'view') {
-      if (!user_access('access chado_ontology_term_submission content', $account)) {
+      if (!user_access('access chado_onto_term_submit content', $account)) {
         return NODE_ACCESS_DENY;
       }
     }
@@ -109,9 +109,9 @@ function tripal_ontology_term_submission_node_access($node, $op, $account) {
  *
  * Creates the form for editing or inserting a record
  *
- * @ingroup tripal_ontology_term_submission
+ * @ingroup tripal_onto_term_submit
  */
-function chado_ontology_term_submission_form($node, &$form_state) {
+function chado_onto_term_submit_form($node, &$form_state) {
 
   // EXPLANATION: This function should construct a form array that is used by
   // Drupal to construct a form for inserting or editing our new node type.
@@ -124,15 +124,15 @@ function chado_ontology_term_submission_form($node, &$form_state) {
   // 3) Use the Tripal API to add form elements for properties,
   //    dbxref's and relationships
   //
-  // For the ontology_term_submission code below we assume that the fake 'ontology_term_submission' table only has
-  // a uniquename, organism_id, type_id and ontology_term_submission_id.
+  // For the onto_term_submit code below we assume that the fake 'onto_term_submit' table only has
+  // a uniquename, organism_id, type_id and onto_term_submit_id.
 
   $form = array();
 
   // Default values can come in the following ways:
   //
   // 1) as elements of the $node object. This occurs when editing an existing
-  //    ontology_term_submission
+  //    onto_term_submit
   // 2) in the $form_state['values'] array which occurs on a failed validation
   //    or ajax callbacks from non submit form elements
   // 3) in the $form_state['input'[ array which occurs on ajax callbacks from
@@ -143,15 +143,15 @@ function chado_ontology_term_submission_form($node, &$form_state) {
 
   // SET FORM DEFAULTS
   //---------------------------------------------
-  $ontology_term_submission      = null; // holds the ontology_term_submission object record
-  $ontology_term_submission_id   = null; // when editing an ontology_term_submission record we'll have an ontology_term_submission_id
+  $onto_term_submit      = null; // holds the onto_term_submit object record
+  $onto_term_submit_id   = null; // when editing an onto_term_submit record we'll have an onto_term_submit_id
 
   // initialize the defaults for the form fields
-  $name   = '';
+  $term_name   = '';
   $definition   = '';
   $definition_ref   = '';
   $term_xref   = '';
-  $ontology_term_submission_type = '';
+  $onto_term_submit_type = '';
   $seeAlso_url  = '';
   $contact_name  = '';
   $contact_email = '';
@@ -163,40 +163,42 @@ function chado_ontology_term_submission_form($node, &$form_state) {
   $relation_cvterm_id_2 = '';
   $relation_cvterm_id_3 = '';
 
-  // if we are editing an existing node then the 'ontology_term_submission' record from Chado
+  // if we are editing an existing node then the 'onto_term_submit' record from Chado
   // is already part of the node, so we set the defaults from that object
-  if (property_exists($node, 'ontology_term_submission')) {
-    $ontology_term_submission = $node->ontology_term_submission;
-    $ontology_term_submission_id   = $ontology_term_submission->ontology_term_submission_id;
-    $name   = $ontology_term_submission->name;
-    $definition  = $ontology_term_submission->definition;
-    $definition_ref  = $ontology_term_submission->definition_ref;
-    $term_xref  = $ontology_term_submission->term_xref;
-    $ontology_term_submission_type = $ontology_term_submission->ontology_term_submission_type;
-  $seeAlso_url  = $ontology_term_submission->seeAlso_url;
-  $contact_name  = $ontology_term_submission->contact_name;
-  $contact_email = $ontology_term_submission->contact_email;
-  $comments = $ontology_term_submission->comments;
-  $parent_cvterm_id_1 = $ontology_term_submission->parent_cvterm_id_1;
-  $parent_cvterm_id_2 = $ontology_term_submission->parent_cvterm_id_2;
-  $parent_cvterm_id_3 = $ontology_term_submission->parent_cvterm_id_3;
-  $relation_cvterm_id_1 = $ontology_term_submission->relation_cvterm_id_1;
-  $relation_cvterm_id_2 = $ontology_term_submission->relation_cvterm_id_2;
-  $relation_cvterm_id_3 = $ontology_term_submission->relation_cvterm_id_3;
+  if (property_exists($node, 'onto_term_submit')) {
+    $onto_term_submit = $node->onto_term_submit;
+dpm($onto_term_submit,'$node->onto_term_submit');
+    $onto_term_submit_id   = $onto_term_submit->onto_term_submit_id;
+    $term_name   = $onto_term_submit->term_name;
+    $definition  = $onto_term_submit->definition;
+    $definition_ref  = $onto_term_submit->definition_ref;
+    $term_xref  = $onto_term_submit->term_xref;
+    $onto_term_submit_type = $onto_term_submit->onto_term_submit_type;
+  $seeAlso_url  = $onto_term_submit->seeAlso_url;
+  $contact_name  = $onto_term_submit->contact_name;
+  $contact_email = $onto_term_submit->contact_email;
+  $comments = $onto_term_submit->comments;
+  $parent_cvterm_id_1 = $onto_term_submit->parent_cvterm_id_1;
+  $parent_cvterm_id_2 = $onto_term_submit->parent_cvterm_id_2;
+  $parent_cvterm_id_3 = $onto_term_submit->parent_cvterm_id_3;
+  $relation_cvterm_id_1 = $onto_term_submit->relation_cvterm_id_1;
+  $relation_cvterm_id_2 = $onto_term_submit->relation_cvterm_id_2;
+  $relation_cvterm_id_3 = $onto_term_submit->relation_cvterm_id_3;
 
-    // keep track of the ontology_term_submission id
-    $form['ontology_term_submission_id'] = array(
+    // keep track of the onto_term_submit id
+    $form['onto_term_submit_id'] = array(
       '#type' => 'value',
-      '#value' => $ontology_term_submission_id,
+      '#value' => $onto_term_submit_id,
     );
   }
   // if we are re constructing the form from a failed validation or ajax
   // callback then use the $form_state['values'] values
   if (array_key_exists('values', $form_state)) {
-     $name   = $form_state['values']['name'];
+     $term_name   = $form_state['values']['term_name'];
      $definition  = $form_state['values']['definition'];
      $definition_ref  = $form_state['values']['definition_ref'];
-     $ontology_term_submission_type = $form_state['values']['ontology_term_submission_type'];
+     $term_xref  = $form_state['values']['term_xref'];
+     $onto_term_submit_type = $form_state['values']['onto_term_submit_type'];
      $seeAlso_url  = $form_state['values']['seeAlso_url'];
      $contact_name  = $form_state['values']['contact_name'];
      $contact_email  = $form_state['values']['contact_email'];
@@ -211,10 +213,11 @@ function chado_ontology_term_submission_form($node, &$form_state) {
   // if we are re building the form from after submission (from ajax call) then
   // the values are in the $form_state['input'] array
   if (array_key_exists('input', $form_state) and !empty($form_state['input'])) {
-     $name   = $form_state['input']['name'];
+     $term_name   = $form_state['input']['term_name'];
      $definition  = $form_state['input']['definition'];
      $definition_ref  = $form_state['input']['definition_ref'];
-     $ontology_term_submission_type = $form_state['input']['ontology_term_submission_type'];
+     $term_xref  = $form_state['input']['term_xref'];
+     $onto_term_submit_type = $form_state['input']['onto_term_submit_type'];
      $seeAlso_url  = $form_state['input']['seeAlso_url'];
      $contact_name  = $form_state['input']['contact_name'];
      $contact_email  = $form_state['input']['contact_email'];
@@ -230,57 +233,67 @@ function chado_ontology_term_submission_form($node, &$form_state) {
 
   // FORM ELEMENTS
   //---------------------------------------------
-  $form['name'] = array(
+  $form['term_name'] = array(
     '#type' => 'textfield',
     '#title' => t('Term Name'),
     '#required' => TRUE,
-    '#default_value' => $name,
+    '#default_value' => $term_name,
     '#description' => t('Enter a new term name.'),
     '#maxlength' => 255
   );
 
   // for the type_id we want to use the default vocabulary so that this field
   // can have auto-complete functionality
-  $cv_id = $ontology_term_submission_type->cv_id;
+  //$cv_id = $onto_term_submit_type->cv_id;
+  $cv_id = $onto_term_submit_type;
      $sql = "SELECT distinct cv.cv_id , cv.name
          FROM {cv} cv
          WHERE name in ('Planarian_Anatomy' , 'Schmidtea_mediterranea_Developmental_Terms' , 'Schmidtea_mediterranea_Developmental_Stages')
          ORDER BY cv.name";
 
-    $results = chado_query($sql,array(':cv_id' => $cv_id);
+    //$results = chado_query($sql,array(':cv_id' => $cv_id));
+    $results = chado_query($sql);
     $libraries[] = '';
     foreach ($results as $library) {
       $libraries[$library->cv_id] = $library->name;
     }
-  $form['ontology_term_submission_type'] = array(
+  $form['onto_term_submit_type'] = array(
     '#title'       => t('Ontology Term Submission Type'),
     '#type'        => t('select'),
-    '#description' => t("Choose the ontology_term_submission type (e.g. Test Type)."),
+    '#description' => t("Choose the onto_term_submit type (e.g. Test Type)."),
     '#required'    => TRUE,
     '#options' => $libraries,
     '#selected' => $cv_id
   );
+
+  $form['term_xref'] = array(
+    '#type' => 'text_format',
+    '#title' => t('Term Reference'),
+    '#required' => TRUE,
+    '#default_value' => $definition_ref,
+    '#description' => t('Enter a reference for the term'),
+  );
+
 
   $form['definition'] = array(
     '#type' => 'text_format',
     '#title' => t('Definition'),
     '#required' => TRUE,
     '#default_value' => $definition,
-    '#description' => t('Enter a def for this ontology_term_submission.'),
- 
+    '#description' => t('Enter a def for this onto_term_submit.'),
+  ); 
   $form['definition_ref'] = array(
     '#type' => 'text_format',
     '#title' => t('Definition Reference'),
     '#required' => TRUE,
     '#default_value' => $definition_ref,
-    '#description' => t('Enter a def reference for this ontology_term_submission.'),
+    '#description' => t('Enter a def reference for this onto_term_submit.'),
   ); 
-
   $form['seeAlso_url'] = array(
     '#type' => 'text_format',
     '#title' => t('seeAlso URL'),
     '#default_value' => $seeAlso_url,
-    '#description' => t('Enter a URL for more rich info for this ontology_term_submission.'),
+    '#description' => t('Enter a URL for more rich info for this onto_term_submit.'),
   );
 
   $form['contact_name'] = array(
@@ -288,20 +301,20 @@ function chado_ontology_term_submission_form($node, &$form_state) {
     '#title' => t('Your Name'),
     '#required' => TRUE,
     '#default_value' => $contact_name,
-    '#description' => t('Enter your name for this ontology_term_submission.'),
+    '#description' => t('Enter your name for this onto_term_submit.'),
   );
   $form['contact_email'] = array(
     '#type' => 'text_format',
     '#title' => t('Your E-mail address'),
     '#required' => TRUE,
     '#default_value' => $contact_email,
-    '#description' => t('Enter your email address for us to contact you about this ontology_term_submission.'),
-
+    '#description' => t('Enter your email address for us to contact you about this onto_term_submit.'),
+  );
   $form['comments'] = array(
     '#type' => 'text_format',
     '#title' => t('Any Comments'),
     '#default_value' => $comments,
-    '#description' => t('Enter any comments about this ontology_term_submission.'),
+    '#description' => t('Enter any comments about this onto_term_submit.'),
 
   );
      $sql = "SELECT distinct cvt.cvterm_id , cvt.name
@@ -309,6 +322,7 @@ function chado_ontology_term_submission_form($node, &$form_state) {
          WHERE cv.name in ('Planarian_Anatomy' , 'Schmidtea_mediterranea_Developmental_Terms' , 'Schmidtea_mediterranea_Developmental_Stages')
            AND cvt.cv_id = cv.cv_id
          ORDER BY cvt.name";
+    $results = chado_query($sql);
     $all_terms[] = '';
     foreach ($results as $rt) {
       $all_terms[$rt->cvterm_id] = $rt->name;
@@ -332,63 +346,62 @@ function chado_ontology_term_submission_form($node, &$form_state) {
     '#title'       => t('Relation 1'),
     '#type'        => t('select'),
     '#description' => t("Choose the Relation Term  (e.g. is_a)."),
-    '#required'    => TRUE,
+    '#required'    => FALSE,
     '#options' => $all_relations,
   );
   $form['parent_cvterm_id_1'] = array(
     '#title'       => t('Parent 1'),
     '#type'        => t('select'),
     '#description' => t("Choose the Parent Term  (e.g. neuron)."),
-    '#required'    => TRUE,
+    '#required'    => FALSE,
     '#options' => $all_terms,
   );
   $form['relation_cvterm_id_2'] = array(
     '#title'       => t('Relation 2'),
     '#type'        => t('select'),
     '#description' => t("Choose the Relation Term  (e.g. is_a)."),
-    '#required'    => TRUE,
+    '#required'    => FALSE,
     '#options' => $all_relations,
   );
   $form['parent_cvterm_id_2'] = array(
     '#title'       => t('Parent 2'),
     '#type'        => t('select'),
     '#description' => t("Choose the Parent Term  (e.g. neuron)."),
-    '#required'    => TRUE,
+    '#required'    => FALSE,
     '#options' => $all_terms,
   );
   $form['relation_cvterm_id_3'] = array(
     '#title'       => t('Relation 3'),
     '#type'        => t('select'),
     '#description' => t("Choose the Relation Term  (e.g. is_a)."),
-    '#required'    => TRUE,
+    '#required'    => FALSE,
     '#options' => $all_relations,
   );
   $form['parent_cvterm_id_3'] = array(
     '#title'       => t('Parent 3'),
     '#type'        => t('select'),
     '#description' => t("Choose the Parent Term  (e.g. neuron)."),
-    '#required'    => TRUE,
+    '#required'    => FALSE,
     '#options' => $all_terms,
   );
 
 
 
-);
 
   // PROPERTIES FORM
   //---------------------------------------------
-  // If there is a ontology_term_submissionprop table and you want to allow users to add/remove
+  // If there is a onto_term_submitprop table and you want to allow users to add/remove
   // entries from it through your node form then add this section to your own
   // node form
 /*
-  $prop_cv = tripal_get_default_cv('ontology_term_submissionprop', 'type_id');
+  $prop_cv = tripal_get_default_cv('onto_term_submitprop', 'type_id');
   $cv_id = $prop_cv ? $prop_cv->cv_id : NULL;
   $details = array(
     // the name of the prop table
-    'property_table' => 'ontology_term_submissionprop',
-    // the value of ontology_term_submission_id for this record
-    'chado_id' => $ontology_term_submission_id,
-    // the cv.cv_id of the cv governing ontology_term_submissionprop.type_id
+    'property_table' => 'onto_term_submitprop',
+    // the value of onto_term_submit_id for this record
+    'chado_id' => $onto_term_submit_id,
+    // the cv.cv_id of the cv governing onto_term_submitprop.type_id
     'cv_id' => $cv_id
   );
   // Adds the form elements to your current form
@@ -396,40 +409,40 @@ function chado_ontology_term_submission_form($node, &$form_state) {
 
   // ADDITIONAL DBXREFS FORM
   //---------------------------------------------
-  // If there is a ontology_term_submission_dbxref table and you want to allow users to
+  // If there is a onto_term_submit_dbxref table and you want to allow users to
   // add/remove entries from it through your node form then add this section to
   // your own node form
   $details = array(
     // the name of the _dbxref table
-    'linking_table' => 'ontology_term_submission_dbxref',
+    'linking_table' => 'onto_term_submit_dbxref',
     // the name of the key in your base chado table
-    'base_foreign_key' => 'ontology_term_submission_id',
-    // the value of ontology_term_submission_id for this record
-    'base_key_value' => $ontology_term_submission_id
+    'base_foreign_key' => 'onto_term_submit_id',
+    // the value of onto_term_submit_id for this record
+    'base_key_value' => $onto_term_submit_id
   );
   // Adds the form elements to your current form
   chado_add_node_form_dbxrefs($form, $form_state, $details);
 */
   // RELATIONSHIPS FORM
   //---------------------------------------------
-  // If there is a ontology_term_submission_relationship table and you want to allow users to
+  // If there is a onto_term_submit_relationship table and you want to allow users to
   // add/remove entries from it through your node form then add this section to
   // your own node form
 /*
-  $rels_cv = tripal_get_default_cv('ontology_term_submission_relationship', 'type_id');
+  $rels_cv = tripal_get_default_cv('onto_term_submit_relationship', 'type_id');
   $cv_id = $rels_cv ? $rels_cv->cv_id : NULL;
   $details = array(
     // the name of the _relationship table
-    'relationship_table' => 'ontology_term_submission_relationship',
+    'relationship_table' => 'onto_term_submit_relationship',
     // the name of your chado base table
-    'base_table' => 'ontology_term_submission',
+    'base_table' => 'onto_term_submit',
     // the name of the key in your base chado table
-    'base_foreign_key' => 'ontology_term_submission_id',
-    // the value of ontology_term_submission_id for this record
-    'base_key_value' => $ontology_term_submission_id,
+    'base_foreign_key' => 'onto_term_submit_id',
+    // the value of onto_term_submit_id for this record
+    'base_key_value' => $onto_term_submit_id,
     // the human-readable name of your node type
-    'nodetype' => 'ontology_term_submission',
-    // the cv.cv_id of the cv governing ontology_term_submission_relationship.type_id
+    'nodetype' => 'onto_term_submit',
+    // the cv.cv_id of the cv governing onto_term_submit_relationship.type_id
     'cv_id' => $cv_id
   );
   // Adds the form elements to your current form
@@ -455,9 +468,9 @@ function chado_ontology_term_submission_form($node, &$form_state) {
  * @param $node
  *
  *
- * @ingroup tripal_ontology_term_submission
+ * @ingroup tripal_onto_term_submit
  */
-function chado_ontology_term_submission_validate($node, $form, &$form_state) {
+function chado_onto_term_submit_validate($node, $form, &$form_state) {
 
   // We only want to validate when the node is saved.
   // Since this validate can be called on AJAX and Deletion of the node
@@ -467,27 +480,27 @@ function chado_ontology_term_submission_validate($node, $form, &$form_state) {
     return;
   }
 
-  // we are syncing if we do not have a node ID but we do have a ontology_term_submission_id. We
+  // we are syncing if we do not have a node ID but we do have a onto_term_submit_id. We
   // don't need to validate during syncing so just skip it.
-  if (!property_exists($node, 'nid') and property_exists($node, 'ontology_term_submission_id') and $node->ontology_term_submission_id != 0) {
+  if (!property_exists($node, 'nid') and property_exists($node, 'onto_term_submit_id') and $node->onto_term_submit_id != 0) {
     return;
   }
 
   // be sure to always trim text fields
-  $node->name   = property_exists($node, 'name') ? trim($node->name) : '';
+  $node->term_name   = property_exists($node, 'term_name') ? trim($node->term_name) : '';
 
   // Validating for an update. If the 'nid' property is present in the node then
   // this is an update and validation can be different for updates
   if (property_exists($node, 'nid')) {
 
-    // make sure the ontology_term_submission type is an allowed term
-    //$type_cv = tripal_get_default_cv('ontology_term_submission', 'type_id');
+    // make sure the onto_term_submit type is an allowed term
+    //$type_cv = tripal_get_default_cv('onto_term_submit', 'type_id');
     //$type = tripal_get_cvterm(array(
-     // 'name' => $node->ontology_term_submission_type,
+     // 'name' => $node->onto_term_submit_type,
      // 'cv_id' => $type_cv->cv_id,
    // ));
    // if (!$type) {
-    //  form_set_error('ontology_term_submission_type', t("The ontology_term_submission type is not a valid name from the Sequence Ontology."));
+    //  form_set_error('onto_term_submit_type', t("The onto_term_submit type is not a valid name from the Sequence Ontology."));
    // }
 
     // TODO: also we should check that the unique constraint is not invalidated
@@ -495,14 +508,14 @@ function chado_ontology_term_submission_validate($node, $form, &$form_state) {
   }
   // Validating for an insert
   else {
-    // make sure the ontology_term_submission type is an allowed term
-    //$type_cv = tripal_get_default_cv('ontology_term_submission', 'type_id');
+    // make sure the onto_term_submit type is an allowed term
+    //$type_cv = tripal_get_default_cv('onto_term_submit', 'type_id');
    // $type = tripal_get_cvterm(array(
-     // 'name' => $node->ontology_term_submission_type,
+     // 'name' => $node->onto_term_submit_type,
     //  'cv_id' => $type_cv->cv_id,
    // ));
     //if (!$type) {
-   //   form_set_error('ontology_term_submission_type', t("The ontology_term_submission type is not a valid name from the Sequence Ontology."));
+   //   form_set_error('onto_term_submit_type', t("The onto_term_submit type is not a valid name from the Sequence Ontology."));
    // }
 
     // TODO: also we should check that the unique constraint doesn't already exist
@@ -513,48 +526,48 @@ function chado_ontology_term_submission_validate($node, $form, &$form_state) {
  *  Implementation of hook_insert(). This function is called after the node is
  * inserted into the database. We need it so that we can insert appropriate
  * fields as provided by the user into the database. And so that we can link the
- * new Drupal node to the data in Chado via the chado_ontology_term_submission linking table. We
+ * new Drupal node to the data in Chado via the chado_onto_term_submit linking table. We
  * can get to this function also during "syncing".
  * With syncing, however, the data already exists in Chado and we do not want
- * to try to re-add it. But we do need to add an entry to the chado_ontology_term_submission
- * table to link the Drupal node with the data in the 'ontology_term_submission' table of Chado.
+ * to try to re-add it. But we do need to add an entry to the chado_onto_term_submit
+ * table to link the Drupal node with the data in the 'onto_term_submit' table of Chado.
  *
  *  This function is not required if the hook_node_info() does not define
  *  any custom node types.
  *
- * @ingroup tripal_ontology_term_submission
+ * @ingroup tripal_onto_term_submit
  */
-function chado_ontology_term_submission_insert($node) {
+function chado_onto_term_submit_insert($node) {
 
-  $ontology_term_submission_id = '';
+  $onto_term_submit_id = '';
 
-  // if there is an ontology_term_submission_id in the $node object then this must be a sync so
-  // we can skip adding the ontology_term_submission as it is already there, although we do need
+  // if there is an onto_term_submit_id in the $node object then this must be a sync so
+  // we can skip adding the onto_term_submit as it is already there, although we do need
   // to proceed with insertion into the chado/drupal linking table.
-  if (!property_exists($node, 'ontology_term_submission_id')) {
+  if (!property_exists($node, 'onto_term_submit_id')) {
 
     // be sure to always trim text fields
-    $node->name   = trim($node->name);
+    $node->term_name   = trim($node->term_name);
     $node->description  = trim($node->description['value']);
 
-    // get the ontology_term_submission type record
-    $type_cv = tripal_get_default_cv('ontology_term_submission', 'type_id');
+    // get the onto_term_submit type record
+    $type_cv = tripal_get_default_cv('onto_term_submit', 'type_id');
     $type = tripal_get_cvterm(array(
-        'name' => $node->ontology_term_submission_type,
-        'cv_id' => $type_cv->cv_id,
+        'cv_id' => $node->onto_term_submit_type,
+       // 'cv_id' => $type_cv->cv_id,
     ));
 
     // perform the insert using the chado_insert_record function();
     $values = array(
-      'name' => $node->name,
-      'defintion' => $node->defintion,
-      'type_id' => $type->cvterm_id,
-      'defintion_ref' => $node->defintion_ref,
-      'term_xref' => $node->term_xref,
-      'seeAlso_url' => $node->seeAlso_url,
-      'contact_name' => $node->contact_name,
-      'contact_email' => $node->contact_email,
-      'comments' => $node->comments,
+      'term_name' => $node->term_name,
+      'definition' => $node->definition['value'],
+      'type_id' => $node->onto_term_submit_type,
+      'definition_ref' => $node->definition_ref['value'],
+      'term_xref' => $node->term_xref['value'],
+      'seeAlso_url' => $node->seeAlso_url['value'],
+      'contact_name' => $node->contact_name['value'],
+      'contact_email' => $node->contact_email['value'],
+      'comments' => $node->comments['value'],
       'parent_cvterm_id_1' => $node->parent_cvterm_id_1,
       'relation_cvterm_id_1' => $node->relation_cvterm_id_1,
       'parent_cvterm_id_2' => $node->parent_cvterm_id_2,
@@ -562,75 +575,78 @@ function chado_ontology_term_submission_insert($node) {
       'parent_cvterm_id_3' => $node->parent_cvterm_id_3,
       'relation_cvterm_id_2' => $node->relation_cvterm_id_2,
     );
-    $ontology_term_submission = chado_insert_record('ontology_term_submission', $values);
-    if (!$ontology_term_submission) {
-      drupal_set_message(t('Unable to add ontology_term_submission.'), 'warning');
-      tripal_report_error('tripal_ontology_term_submission', TRIPAL_WARNING, 'Insert ontology_term_submission: Unable to create ontology_term_submission where values: %values',
+dpm($node,'node');
+dpm($values,'values');
+    $onto_term_submit = chado_insert_record('onto_term_submit', $values);
+dpm($onto_term_submit,'onto_term_submit');
+    if (!$onto_term_submit) {
+      drupal_set_message(t('Unable to add onto_term_submit.'), 'warning');
+      tripal_report_error('tripal_onto_term_submit', TRIPAL_WARNING, 'Insert onto_term_submit: Unable to create onto_term_submit where values: %values',
         array('%values' => print_r($values, TRUE)));
       return;
     }
 
-    // get the ontology_term_submission_id for linking Drupal node with Chado data
-    $ontology_term_submission_id = $ontology_term_submission['ontology_term_submission_id'];
+    // get the onto_term_submit_id for linking Drupal node with Chado data
+    $onto_term_submit_id = $onto_term_submit['onto_term_submit_id'];
 
     // Only add to other Chado tables if the base record was inserted properly
-    if ($ontology_term_submission_id > 0) {
+    if ($onto_term_submit_id > 0) {
 
-/*      // If you implemented the properties form in chado_ontology_term_submission_form then you
+/*      // If you implemented the properties form in chado_onto_term_submit_form then you
       // need to handle inserting these properties into your Chado prop table.
       $details = array(
         // the name of the prop table
-        'property_table'   => 'ontology_term_submissionprop',
+        'property_table'   => 'onto_term_submitprop',
         // the name of your Chado base table
-        'base_table'       => 'ontology_term_submission',
+        'base_table'       => 'onto_term_submit',
         // the name of the key in your base table
-        'foreignkey_name'  => 'ontology_term_submission_id',
-        // the value of the ontology_term_submission_id key
-        'foreignkey_value' => $ontology_term_submission_id
+        'foreignkey_name'  => 'onto_term_submit_id',
+        // the value of the onto_term_submit_id key
+        'foreignkey_value' => $onto_term_submit_id
       );
       chado_update_node_form_properties($node, $details);
 
-      // If you implemented the dbxrefs form in chado_ontology_term_submission_form then you need
+      // If you implemented the dbxrefs form in chado_onto_term_submit_form then you need
       // to handle inserting these database references into your Chado _dbxref
       // table.
       $details = array(
         // the name of your _dbxref table
-        'linking_table'    => 'ontology_term_submission_dbxref',
+        'linking_table'    => 'onto_term_submit_dbxref',
         // the name of the key in your base table
-        'foreignkey_name'  => 'ontology_term_submission_id',
-        // the value of the ontology_term_submission_id key
-        'foreignkey_value' => $ontology_term_submission_id
+        'foreignkey_name'  => 'onto_term_submit_id',
+        // the value of the onto_term_submit_id key
+        'foreignkey_value' => $onto_term_submit_id
       );
       chado_update_node_form_dbxrefs($node, $details);
 
-      // If you implemented the relationships form in chado_ontology_term_submission_form then
+      // If you implemented the relationships form in chado_onto_term_submit_form then
       // you need to handle inserting these relationships into your Chado
       // _relationship table.
       $details = array(
         // name of the _relationship table
-        'relationship_table' => 'ontology_term_submission_relationship',
-        // value of the ontology_term_submission_id key
-        'foreignkey_value' => $ontology_term_submission_id
+        'relationship_table' => 'onto_term_submit_relationship',
+        // value of the onto_term_submit_id key
+        'foreignkey_value' => $onto_term_submit_id
       );
       chado_update_node_form_relationships($node, $details);
  */ 
    }
   }
   else {
-    // the node has an ontology_term_submission_id so get it for linking Drupal node with Chado
+    // the node has an onto_term_submit_id so get it for linking Drupal node with Chado
     // data
-    $ontology_term_submission_id = $node->ontology_term_submission_id;
+    $onto_term_submit_id = $node->onto_term_submit_id;
   }
 
-  // Make sure the entry for this ontology_term_submission doesn't already exist in the
-  // chado_ontology_term_submission table if it doesn't exist then we want to add it.
-   $check_org_id = chado_get_id_from_nid('ontology_term_submission', $node->nid);
+  // Make sure the entry for this onto_term_submit doesn't already exist in the
+  // chado_onto_term_submit table if it doesn't exist then we want to add it.
+   $check_org_id = chado_get_id_from_nid('onto_term_submit', $node->nid);
   if (!$check_org_id) {
     $record = new stdClass();
     $record->nid = $node->nid;
     $record->vid = $node->vid;
-    $record->ontology_term_submission_id = $ontology_term_submission_id;
-    drupal_write_record('chado_ontology_term_submission', $record);
+    $record->onto_term_submit_id = $onto_term_submit_id;
+    drupal_write_record('chado_onto_term_submit', $record);
   }
 }
 
@@ -641,56 +657,56 @@ function chado_ontology_term_submission_insert($node) {
  * This function is not required if the hook_node_info() does not define any
  * custom node types.
  *
- * @ingroup tripal_ontology_term_submission
+ * @ingroup tripal_onto_term_submit
  */
-function chado_ontology_term_submission_update($node) {
+function chado_onto_term_submit_update($node) {
   // be sure to always trim text fields
-  $node->name   = trim($node->name);
+  $node->term_name   = trim($node->term_name);
   $node->definition  = trim($node->definition['value']);
 
   // use the chado_update_record() function to update the record
   $match = array(
-    'ontology_term_submission_id' => $ontology_term_submission_id,
+    'onto_term_submit_id' => $onto_term_submit_id,
   );
   $values = array(
-    'name' => $node->name,
+    'term_name' => $node->term_name,
   );
   $options = array('return_record' => TRUE);
-  $status = chado_update_record('ontology_term_submission', $match, $values, $options);
+  $status = chado_update_record('onto_term_submit', $match, $values, $options);
 
   if (!$status) {
-    drupal_set_message(t('Unable to update ontology_term_submission.'), 'warning');
-    tripal_report_error('tripal_ontology_term_submission', TRIPAL_WARNING, 'Update ontology_term_submission: Unable to update ontology_term_submission where values: %values',
+    drupal_set_message(t('Unable to update onto_term_submit.'), 'warning');
+    tripal_report_error('tripal_onto_term_submit', TRIPAL_WARNING, 'Update onto_term_submit: Unable to update onto_term_submit where values: %values',
       array('%values' => print_r($values, TRUE)));
   }
 
-/*  // If you implemented the properties form in chado_ontology_term_submission_form then you need
+/*  // If you implemented the properties form in chado_onto_term_submit_form then you need
   // to handle updating these properties into your Chado prop table.
   $details = array(
-    'property_table' => 'ontology_term_submissionprop', // the name of the prop table
-    'base_table' => 'ontology_term_submission',         // the name of your Chado base table
-    'foreignkey_name' => 'ontology_term_submission_id', // the name of the key in your base table
-    'foreignkey_value' => $ontology_term_submission_id  // the value of the ontology_term_submission_id key
+    'property_table' => 'onto_term_submitprop', // the name of the prop table
+    'base_table' => 'onto_term_submit',         // the name of your Chado base table
+    'foreignkey_name' => 'onto_term_submit_id', // the name of the key in your base table
+    'foreignkey_value' => $onto_term_submit_id  // the value of the onto_term_submit_id key
   );
   chado_update_node_form_properties($node, $details);
 
-  // If you implemented the dbxrefs form in chado_ontology_term_submission_form then you need to
+  // If you implemented the dbxrefs form in chado_onto_term_submit_form then you need to
   // handle updating these database references into your Chado _dbxref table.
   $details = array(
-    'linking_table' => 'ontology_term_submission_dbxref', // the name of your _dbxref table
-    'foreignkey_name' => 'ontology_term_submission_id',   // the name of the key in your base table
-    'foreignkey_value' => $ontology_term_submission_id    // the value of the ontology_term_submission_id key
+    'linking_table' => 'onto_term_submit_dbxref', // the name of your _dbxref table
+    'foreignkey_name' => 'onto_term_submit_id',   // the name of the key in your base table
+    'foreignkey_value' => $onto_term_submit_id    // the value of the onto_term_submit_id key
   );
   chado_update_node_form_dbxrefs($node, $details);
 
-  // If you implemented the relationships form in chado_ontology_term_submission_form then you
+  // If you implemented the relationships form in chado_onto_term_submit_form then you
   // need to handle updating these relationships into your Chado _relationship
   // table.
   $details = array(
     // name of the _relationship table
-    'relationship_table' => 'ontology_term_submission_relationship',
-    // value of the ontology_term_submission_id key
-    'foreignkey_value' => $ontology_term_submission_id
+    'relationship_table' => 'onto_term_submit_relationship',
+    // value of the onto_term_submit_id key
+    'foreignkey_value' => $onto_term_submit_id
   );
   chado_update_node_form_relationships($node, $details);
 */
@@ -703,47 +719,47 @@ function chado_ontology_term_submission_update($node) {
  * This function is not required if the hook_node_info() does not define any
  * custom node types.
  *
- * @ingroup tripal_ontology_term_submission
+ * @ingroup tripal_onto_term_submit
  */
-function chado_ontology_term_submission_delete($node) {
+function chado_onto_term_submit_delete($node) {
 
-  // get the ontology_term_submission id from the node
-  $ontology_term_submission_id  = chado_get_id_from_nid('ontology_term_submission', $node->nid);
+  // get the onto_term_submit id from the node
+  $onto_term_submit_id  = chado_get_id_from_nid('onto_term_submit', $node->nid);
 
-  // if we don't have a ontology_term_submission id for this node then this isn't a node of type
-  // chado_ontology_term_submission or the entry in the chado_ontology_term_submission table was lost.
-  if (!$ontology_term_submission_id) {
+  // if we don't have a onto_term_submit id for this node then this isn't a node of type
+  // chado_onto_term_submit or the entry in the chado_onto_term_submit table was lost.
+  if (!$onto_term_submit_id) {
     return;
   }
 
   // remove the entry in the chado_exapmle table linking the deleted
   // Drupal node with the data in Chado
-  $sql_del = "DELETE FROM {chado_ontology_term_submission} WHERE nid = :nid AND vid = :vid";
+  $sql_del = "DELETE FROM {chado_onto_term_submit} WHERE nid = :nid AND vid = :vid";
   db_query($sql_del, array(':nid' => $node->nid, ':vid' => $node->vid));
 
-  // Remove data from ontology_term_submission tables of Chado database. This will
+  // Remove data from onto_term_submit tables of Chado database. This will
   // cause a cascade delete and remove all data in referencing tables
-  // for this ontology_term_submission
-  chado_query("DELETE FROM {ontology_term_submission} WHERE ontology_term_submission_id = :ontology_term_submission_id", array(':ontology_term_submission_id' => $ontology_term_submission_id));
+  // for this onto_term_submit
+  chado_query("DELETE FROM {onto_term_submit} WHERE onto_term_submit_id = :onto_term_submit_id", array(':onto_term_submit_id' => $onto_term_submit_id));
 
   // inform the user that the data was deleted
-  drupal_set_message(t("The ontology_term_submission and all associated data were removed from Chado"));
+  drupal_set_message(t("The onto_term_submit and all associated data were removed from Chado"));
 
 }
 
 /**
  * Implementation of hook_load(). This function is necessary to load into the
- * $node object the fields of the table form Chado. For ontology_term_submission for the ontology_term_submission
- * table, the chado_ontology_term_submission_load() function adds in a ontology_term_submission object which
+ * $node object the fields of the table form Chado. For onto_term_submit for the onto_term_submit
+ * table, the chado_onto_term_submit_load() function adds in a onto_term_submit object which
  * contains all of the fields and sub objects for data in tables with foreign
  * key relationships.
  *
  * This function is not required if the hook_node_info() does not define any
  * custom node types.
  *
- * @ingroup tripal_ontology_term_submission
+ * @ingroup tripal_onto_term_submit
  */
-function chado_ontology_term_submission_load($nodes) {
+function chado_onto_term_submit_load($nodes) {
 
   // EXPLANATION: when displaying or node or accessing the node in a template
   // we need the data from Chado. This function finds the record in Chado that
@@ -752,18 +768,18 @@ function chado_ontology_term_submission_load($nodes) {
   // there may be multiple nodes that get passed in so we have to iterate
   // through them all
   foreach ($nodes as $nid => $node) {
-    // find the ontology_term_submission and add in the details
-    $ontology_term_submission_id = chado_get_id_from_nid('ontology_term_submission', $nid);
+    // find the onto_term_submit and add in the details
+    $onto_term_submit_id = chado_get_id_from_nid('onto_term_submit', $nid);
 
     // if the nid does not have a matching record then skip this node.
     // this can happen with orphaned nodes.
-    if (!$ontology_term_submission_id) {
+    if (!$onto_term_submit_id) {
       continue;
     }
 
-    // build the ontology_term_submission variable by using the chado_generate_var() function
-    $values = array('ontology_term_submission_id' => $ontology_term_submission_id);
-    $ontology_term_submission = chado_generate_var('ontology_term_submission', $values);
+    // build the onto_term_submit variable by using the chado_generate_var() function
+    $values = array('onto_term_submit_id' => $onto_term_submit_id);
+    $onto_term_submit = chado_generate_var('onto_term_submit', $values);
 
     // for fields in the table that are of type 'text' you may want to include
     // those by default, the chado_generate_var does not include text fields as
@@ -774,16 +790,16 @@ function chado_ontology_term_submission_load($nodes) {
     // include it here using the chado_expand_var() function. In most
     // cases it is probably best to let the end-user decide if text fields
     // should be included by using this function in the templates.
-    $ontology_term_submission = chado_expand_var($ontology_term_submission, 'field', 'ontology_term_submission.definition');
-    $ontology_term_submission = chado_expand_var($ontology_term_submission, 'field', 'ontology_term_submission.defintion_ref');
-    $ontology_term_submission = chado_expand_var($ontology_term_submission, 'field', 'ontology_term_submission.term_xref');
-    $ontology_term_submission = chado_expand_var($ontology_term_submission, 'field', 'ontology_term_submission.seeAlso_url');
-    $ontology_term_submission = chado_expand_var($ontology_term_submission, 'field', 'ontology_term_submission.contact_name');
-    $ontology_term_submission = chado_expand_var($ontology_term_submission, 'field', 'ontology_term_submission.contact_email');
-    $ontology_term_submission = chado_expand_var($ontology_term_submission, 'field', 'ontology_term_submission.comments');
+    $onto_term_submit = chado_expand_var($onto_term_submit, 'field', 'onto_term_submit.definition');
+    $onto_term_submit = chado_expand_var($onto_term_submit, 'field', 'onto_term_submit.definition_ref');
+    $onto_term_submit = chado_expand_var($onto_term_submit, 'field', 'onto_term_submit.term_xref');
+    $onto_term_submit = chado_expand_var($onto_term_submit, 'field', 'onto_term_submit.seeAlso_url');
+    $onto_term_submit = chado_expand_var($onto_term_submit, 'field', 'onto_term_submit.contact_name');
+    $onto_term_submit = chado_expand_var($onto_term_submit, 'field', 'onto_term_submit.contact_email');
+    $onto_term_submit = chado_expand_var($onto_term_submit, 'field', 'onto_term_submit.comments');
 
-    // add the new ontology_term_submission object to this node.
-    $nodes[$nid]->ontology_term_submission = $ontology_term_submission;
+    // add the new onto_term_submit object to this node.
+    $nodes[$nid]->onto_term_submit = $onto_term_submit;
 
     // If your module is using the Chado Node: Title & Path API to allow custom
     // titles for your node type. Every time you want the title of the node, you
@@ -798,9 +814,9 @@ function chado_ontology_term_submission_load($nodes) {
  *
  * Performs actions on a node object prior to it being saved
  *
- * @ingroup tripal_ontology_term_submission
+ * @ingroup tripal_onto_term_submit
  */
-function tripal_ontology_term_submission_node_presave($node) {
+function tripal_onto_term_submit_node_presave($node) {
 
   // EXPLANATION: This node is useful for making changes to the node prior to it
   // being saved to the database.
@@ -820,15 +836,15 @@ function tripal_ontology_term_submission_node_presave($node) {
     // the content listing needs to be set here. Do not call the
     // chado_get_node_title() function here to set the title as the node object
     // isn't properly filled out and the function will fail.
-    case 'chado_ontology_term_submission':
+    case 'chado_onto_term_submit':
       // for a form submission the 'uniquename' field will be set,
-      // for a sync, we must pull from the ontology_term_submission object
-      if (property_exists($node, 'name')) {
+      // for a sync, we must pull from the onto_term_submit object
+      if (property_exists($node, 'term_name')) {
         // set the title
-        $node->title = "Term Submission:$node->name by $node->contact_name";
+        $node->title = "1Term Submission:" . $node->term_name . ' by '.  $node->contact_name['value'];
       }
-      else if (property_exists($node, 'ontology_term_submission')) {
-        $node->title = "Term Submission:$node->ontology_term_submission->name by $node->ontology_term_submission->contact_name";
+      else if (property_exists($node, 'onto_term_submit')) {
+        $node->title = "2Term Submission:".$node->onto_term_submit->term_name ." by ". $node->onto_term_submit->contact_name['value'];
       }
       break;
   }
@@ -839,18 +855,18 @@ function tripal_ontology_term_submission_node_presave($node) {
  *
  * Performs actions after any node has been inserted.
  *
- * @ingroup tripal_ontology_term_submission
+ * @ingroup tripal_onto_term_submit
  */
-function tripal_ontology_term_submission_node_insert($node) {
-
+function tripal_onto_term_submit_node_insert($node) {
+drupal_set_message("I amhere tripal_onto_term_submit_node_insert", 'warning');
   // EXPLANATION: This function is used after any a node is inserted into the
   // database. It is different from the hook_insert() function above in that it
   // is called after any node is saved, regardless of it's type. This function
   // is useful for making changes to the database after a node is inserted.
-  // An ontology_term_submission comes from the tripal_feature module where the URL alias of a
+  // An onto_term_submit comes from the tripal_feature module where the URL alias of a
   // node cannot be set in the hook_insert() function. Therefore the
   // tripal_feature module uses this function to set the URL path of a newly
-  // inserted ontology_term_submission node.
+  // inserted onto_term_submit node.
   //
   // This function is not required. You probably won't need it if you don't
   // define a custom node type in the hook_node_info() function. But it is node
@@ -858,18 +874,22 @@ function tripal_ontology_term_submission_node_insert($node) {
   // of any node.
 
   // the Ontology Term Submission code below will set the URL path after inserting. We do it here
-  // because we do not know the ontology_term_submission_id in the pre-save and cannot do it in
+  // because we do not know the onto_term_submit_id in the pre-save and cannot do it in
   // the hook_insert()
   switch ($node->type) {
-    case 'chado_ontology_term_submission':
+    case 'chado_onto_term_submit':
 
-      // find the ontology_term_submission and add in the details
-      $ontology_term_submission_id = chado_get_id_from_nid('ontology_term_submission', $node->nid);
-
-      // build the ontology_term_submission variable by using the chado_generate_var() function
-      $values = array('ontology_term_submission_id' => $ontology_term_submission_id);
-      $ontology_term_submission = chado_generate_var('ontology_term_submission', $values);
-      $node->ontology_term_submission = $ontology_term_submission;
+      // find the onto_term_submit and add in the details
+      $onto_term_submit_id = chado_get_id_from_nid('onto_term_submit', $node->nid);
+dpm($onto_term_submit_id,'onto_term_submit_id');
+dpm($node->nid,'$node->nid');
+      // build the onto_term_submit variable by using the chado_generate_var() function
+      $values = array('onto_term_submit_id' => $onto_term_submit_id);
+dpm($node,'node in tripal_onto_term_submit_node_insert');
+dpm($values,'values in tripal_onto_term_submit_node_insert');
+      $onto_term_submit = chado_generate_var('onto_term_submit', $values);
+dpm($onto_term_submit,'onto_term_submit in tripal_onto_term_submit_node_insert');
+      $node->onto_term_submit = $onto_term_submit;
 
 
       // EXPLANATION: You can allow the site admin to customize the
@@ -879,14 +899,14 @@ function tripal_ontology_term_submission_node_insert($node) {
       // named chado_get_node_title() and chado_set_node_url().  These
       // functions use a string of tokens to build the URL and titles and the
       // site admin has the ability to set these tokens.  There are
-      // form elements made available in the tripal_ontology_term_submission_admin() function
+      // form elements made available in the tripal_onto_term_submit_admin() function
       // that allow the admin to set these tokens.  The default token string
       // is provided to Tripal using two hook functions, and are found below.
       // These are: chado_exmaple_chado_node_default_title() and
-      // chado_ontology_term_submission_chdo_node_default_url().
+      // chado_onto_term_submit_chdo_node_default_url().
 
       // Set the Title and URL for this node.
-      $ontology_term_submission->title = chado_get_node_title($node);
+      $onto_term_submit->title = chado_get_node_title($node);
       chado_set_node_url($node);
       break;
   }
@@ -898,12 +918,12 @@ function tripal_ontology_term_submission_node_insert($node) {
  * Performs actions after any node has been updated.
  *
  */
-function tripal_ontology_term_submission_node_update($node) {
+function tripal_onto_term_submit_node_update($node) {
 
   // EXPLANATION: This function is used after any a node is updated in the
   // database. It is different from the hook_update() function above in that it
   // is called after any node is updated, regardless of it's type.
-  // An ontology_term_submission comes from the tripal_feature module where the URL alias of a
+  // An onto_term_submit comes from the tripal_feature module where the URL alias of a
   // node cannot be set in the hook_update() function. Therefore the
   // tripal_feature module uses this function to reset the URL path of an
   // updated feature node.
@@ -915,16 +935,16 @@ function tripal_ontology_term_submission_node_update($node) {
 
   // add items to other nodes, build index and search results
   switch ($node->type) {
-    case 'chado_ontology_term_submission':
+    case 'chado_onto_term_submit':
 
       // If your module is using the Chado Node: Title & Path API to allow
       // custom titles for your node type. Every time you want the title of the
       // node, you need to use the following API function:
-      $ontology_term_submission->title = chado_get_node_title($node);
+      $onto_term_submit->title = chado_get_node_title($node);
 
-      // set the URL for this ontology_term_submission page
+      // set the URL for this onto_term_submit page
       // see the code in the tripal_feature/includes/tripal_feature.chado_node.inc
-      // file in the function tripal_feature_node_insert for an ontology_term_submission of how
+      // file in the function tripal_feature_node_insert for an onto_term_submit of how
       // that module sets the URL. It uses a configuration file to allow the
       // user to dynamically build a URL schema and then uses that schema to
       // generate a URL string.
@@ -934,9 +954,9 @@ function tripal_ontology_term_submission_node_update($node) {
 /**
  * Implementation of hook_node_view().
  *
- * @ingroup tripal_ontology_term_submission
+ * @ingroup tripal_onto_term_submit
  */
-function tripal_ontology_term_submission_node_view($node, $view_mode, $langcode) {
+function tripal_onto_term_submit_node_view($node, $view_mode, $langcode) {
 
   // EXPLANATION: This function defines the content "blocks" that appear when
   // the node is displayed. It is node type agnostic so we can add content to
@@ -945,7 +965,7 @@ function tripal_ontology_term_submission_node_view($node, $view_mode, $langcode)
   // add content to other node types.
 
   switch ($node->type) {
-    case 'chado_ontology_term_submission':
+    case 'chado_onto_term_submit':
       // there are different ways a node can be viewed. Primarily Tripal
       // supports full page view and teaser view.
       if ($view_mode == 'full') {
@@ -959,7 +979,7 @@ function tripal_ontology_term_submission_node_view($node, $view_mode, $langcode)
         $node->content['#tripal_generic_node_template'] = TRUE;
 
         // There is always a base template. This is the template that is first
-        // shown when the ontology_term_submission node type is first displayed.
+        // shown when the onto_term_submit node type is first displayed.
         // If you are using the default Tripal node template, then you should
         // also set two additional items in each array:  tripal_toc_id and
         // tripal_toc_title. The tripal_tock_id should be a single unique
@@ -969,8 +989,8 @@ function tripal_ontology_term_submission_node_view($node, $view_mode, $langcode)
         // content. You should only set the '#weight' element for the base
         // template (or Overview) to ensure that it appears at the top of the
         // list. Otherwise items are sorted alphabetically.
-        $node->content['tripal_ontology_term_submission_base'] = array(
-          '#theme' => 'tripal_ontology_term_submission_base',
+        $node->content['tripal_onto_term_submit_base'] = array(
+          '#theme' => 'tripal_onto_term_submit_base',
           '#node' => $node,
           '#tripal_toc_id'    => 'base',
           '#tripal_toc_title' => 'Overview',
@@ -978,20 +998,20 @@ function tripal_ontology_term_submission_node_view($node, $view_mode, $langcode)
         );
 /*        // we can add other templates as well for properties, publications,
         // dbxrefs, etc...
-        $node->content['tripal_ontology_term_submission_properties'] = array(
-          '#theme' => 'tripal_ontology_term_submission_properties',
+        $node->content['tripal_onto_term_submit_properties'] = array(
+          '#theme' => 'tripal_onto_term_submit_properties',
           '#node' => $node,
           '#tripal_toc_id'    => 'properties',
           '#tripal_toc_title' => 'Properties',
         );
-        $node->content['tripal_ontology_term_submission_references'] = array(
-          '#theme' => 'tripal_ontology_term_submission_references',
+        $node->content['tripal_onto_term_submit_references'] = array(
+          '#theme' => 'tripal_onto_term_submit_references',
           '#node' => $node,
           '#tripal_toc_id'    => 'references',
           '#tripal_toc_title' => 'Cross References',
         );
-        $node->content['tripal_ontology_term_submission_relationships'] = array(
-          '#theme' => 'tripal_ontology_term_submission_relationships',
+        $node->content['tripal_onto_term_submit_relationships'] = array(
+          '#theme' => 'tripal_onto_term_submit_relationships',
           '#node' => $node,
           '#tripal_toc_id'    => 'relationships',
           '#tripal_toc_title' => 'Relationships',
@@ -1006,8 +1026,8 @@ function tripal_ontology_term_submission_node_view($node, $view_mode, $langcode)
       // set the content for the teaser view
       if ($view_mode == 'teaser') {
         // The teaser is also a required template
-        $node->content['tripal_ontology_term_submission_teaser'] = array(
-          '#theme' => 'tripal_ontology_term_submission_teaser',
+        $node->content['tripal_onto_term_submit_teaser'] = array(
+          '#theme' => 'tripal_onto_term_submit_teaser',
           '#node' => $node,
         );
       }
@@ -1016,10 +1036,10 @@ function tripal_ontology_term_submission_node_view($node, $view_mode, $langcode)
     // in the same way as above.
     case 'chado_organism':
       if ($view_mode == 'full') {
-        $node->content['tripal_organism_ontology_term_submissions'] = array(
-          '#theme' => 'tripal_organism_ontology_term_submissions',
+        $node->content['tripal_organism_onto_term_submits'] = array(
+          '#theme' => 'tripal_organism_onto_term_submits',
           '#node' => $node,
-          '#tripal_toc_id'    => 'ontology_term_submissions',
+          '#tripal_toc_id'    => 'onto_term_submits',
           '#tripal_toc_title' => 'Ontology Term Submissions',
         );
       }
@@ -1033,19 +1053,20 @@ function tripal_ontology_term_submission_node_view($node, $view_mode, $langcode)
  * Implements [content_type]_chado_node_default_title_format().
  *
  * Defines a default title format for the Chado Node API to set the titles on
- * Chado ontology_term_submission nodes based on chado fields.
+ * Chado onto_term_submit nodes based on chado fields.
  */
-function chado_ontology_term_submission_chado_node_default_title_format() {
-  //return '[ontology_term_submission.uniquename] ([ontology_term_submission.type_id>cvterm.name]) [ontology_term_submission.organism_id>organism.genus] [ontology_term_submission.organism_id>organism.species]';
-  return '[ontology_term_submission.name] ([ontology_term_submission.type_id>cvterm.name]) by [ontology_term_submission.contact_name]';
+function chado_onto_term_submit_chado_node_default_title_format() {
+  //return '[onto_term_submit.uniquename] ([onto_term_submit.type_id>cvterm.name]) [onto_term_submit.organism_id>organism.genus] [onto_term_submit.organism_id>organism.species]';
+  return '[onto_term_submit.term_name] ([onto_term_submit.type_id]) by [onto_term_submit.contact_name]';
 }
 
 /**
  * Implements hook_chado_node_default_url_format().
  *
- * Designates a default URL format for ontology_term_submission nodes.
+ * Designates a default URL format for onto_term_submit nodes.
  */
-function chado_ontology_term_submission_chado_node_default_url_format() {
-  //return '/ontology_term_submission/[ontology_term_submission.organism_id>organism.genus]/[ontology_term_submission.organism_id>organism.species]/[ontology_term_submission.type_id>cvterm.name]/[ontology_term_submission.uniquename]';
-  return '/ontology_term_submission/ontology_term_submission.type_id>cv.name]/[ontology_term_submission.name]';
+function chado_onto_term_submit_chado_node_default_url_format() {
+  //return '/onto_term_submit/[onto_term_submit.organism_id>organism.genus]/[onto_term_submit.organism_id>organism.species]/[onto_term_submit.type_id>cvterm.name]/[onto_term_submit.uniquename]';
+drupal_set_message("I amhere chado_onto_term_submit_chado_node_default_url_format", 'warning');
+  return '/ontology_term_submit/[onto_term_submit.type_id]/[onto_term_submit.term_name]';
 }
