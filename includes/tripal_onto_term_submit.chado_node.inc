@@ -71,6 +71,7 @@ function tripal_onto_term_submit_node_info() {
  * be implemented by other modules.
  */
 function tripal_onto_term_submit_node_access($node, $op, $account) {
+drupal_set_message("I amhere tripal_onto_term_submit_node_access", 'warning');
   $node_type = $node;
   if (is_object($node)) {
     $node_type = $node->type;
@@ -112,7 +113,7 @@ function tripal_onto_term_submit_node_access($node, $op, $account) {
  * @ingroup tripal_onto_term_submit
  */
 function chado_onto_term_submit_form($node, &$form_state) {
-
+drupal_set_message("I amhere chado_onto_term_submit_form", 'warning');
   // EXPLANATION: This function should construct a form array that is used by
   // Drupal to construct a form for inserting or editing our new node type.
   // See this page for information about the Form API:
@@ -152,7 +153,7 @@ function chado_onto_term_submit_form($node, &$form_state) {
   $definition_ref   = '';
   $term_xref   = '';
   $onto_term_submit_type = '';
-  $seeAlso_url  = '';
+  $seealso_url  = '';
   $contact_name  = '';
   $contact_email = '';
   $comments = '';
@@ -173,17 +174,17 @@ dpm($onto_term_submit,'$node->onto_term_submit');
     $definition  = $onto_term_submit->definition;
     $definition_ref  = $onto_term_submit->definition_ref;
     $term_xref  = $onto_term_submit->term_xref;
-    $onto_term_submit_type = $onto_term_submit->onto_term_submit_type;
-  $seeAlso_url  = $onto_term_submit->seeAlso_url;
+    $onto_term_submit_type = $onto_term_submit->type_id->cv_id;
+  $seealso_url  = $onto_term_submit->seealso_url;
   $contact_name  = $onto_term_submit->contact_name;
   $contact_email = $onto_term_submit->contact_email;
   $comments = $onto_term_submit->comments;
-  $parent_cvterm_id_1 = $onto_term_submit->parent_cvterm_id_1;
-  $parent_cvterm_id_2 = $onto_term_submit->parent_cvterm_id_2;
-  $parent_cvterm_id_3 = $onto_term_submit->parent_cvterm_id_3;
-  $relation_cvterm_id_1 = $onto_term_submit->relation_cvterm_id_1;
-  $relation_cvterm_id_2 = $onto_term_submit->relation_cvterm_id_2;
-  $relation_cvterm_id_3 = $onto_term_submit->relation_cvterm_id_3;
+  $parent_cvterm_id_1 = $onto_term_submit->parent_cvterm_id_1->cvterm_id;
+  $parent_cvterm_id_2 = $onto_term_submit->parent_cvterm_id_2->cvterm_id;
+  $parent_cvterm_id_3 = $onto_term_submit->parent_cvterm_id_3->cvterm_id;
+  $relation_cvterm_id_1 = $onto_term_submit->relation_cvterm_id_1->cvterm_id;
+  $relation_cvterm_id_2 = $onto_term_submit->relation_cvterm_id_2->cvterm_id;
+  $relation_cvterm_id_3 = $onto_term_submit->relation_cvterm_id_3->cvterm_id;
 
     // keep track of the onto_term_submit id
     $form['onto_term_submit_id'] = array(
@@ -199,7 +200,7 @@ dpm($onto_term_submit,'$node->onto_term_submit');
      $definition_ref  = $form_state['values']['definition_ref'];
      $term_xref  = $form_state['values']['term_xref'];
      $onto_term_submit_type = $form_state['values']['onto_term_submit_type'];
-     $seeAlso_url  = $form_state['values']['seeAlso_url'];
+     $seealso_url  = $form_state['values']['seealso_url'];
      $contact_name  = $form_state['values']['contact_name'];
      $contact_email  = $form_state['values']['contact_email'];
      $comments  = $form_state['values']['comments'];
@@ -218,7 +219,7 @@ dpm($onto_term_submit,'$node->onto_term_submit');
      $definition_ref  = $form_state['input']['definition_ref'];
      $term_xref  = $form_state['input']['term_xref'];
      $onto_term_submit_type = $form_state['input']['onto_term_submit_type'];
-     $seeAlso_url  = $form_state['input']['seeAlso_url'];
+     $seealso_url  = $form_state['input']['seealso_url'];
      $contact_name  = $form_state['input']['contact_name'];
      $contact_email  = $form_state['input']['contact_email'];
      $comments  = $form_state['input']['comments'];
@@ -263,7 +264,8 @@ dpm($onto_term_submit,'$node->onto_term_submit');
     '#description' => t("Choose the onto_term_submit type (e.g. Test Type)."),
     '#required'    => TRUE,
     '#options' => $libraries,
-    '#selected' => $cv_id
+//    '#selected' => $cv_id,
+    '#default_value' => $onto_term_submit_type
   );
 
   $form['term_xref'] = array(
@@ -289,10 +291,10 @@ dpm($onto_term_submit,'$node->onto_term_submit');
     '#default_value' => $definition_ref,
     '#description' => t('Enter a def reference for this onto_term_submit.'),
   ); 
-  $form['seeAlso_url'] = array(
+  $form['seealso_url'] = array(
     '#type' => 'text_format',
-    '#title' => t('seeAlso URL'),
-    '#default_value' => $seeAlso_url,
+    '#title' => t('seealso URL'),
+    '#default_value' => $seealso_url,
     '#description' => t('Enter a URL for more rich info for this onto_term_submit.'),
   );
 
@@ -348,6 +350,7 @@ dpm($onto_term_submit,'$node->onto_term_submit');
     '#description' => t("Choose the Relation Term  (e.g. is_a)."),
     '#required'    => FALSE,
     '#options' => $all_relations,
+    '#default_value' => $relation_cvterm_id_1,
   );
   $form['parent_cvterm_id_1'] = array(
     '#title'       => t('Parent 1'),
@@ -355,6 +358,7 @@ dpm($onto_term_submit,'$node->onto_term_submit');
     '#description' => t("Choose the Parent Term  (e.g. neuron)."),
     '#required'    => FALSE,
     '#options' => $all_terms,
+    '#default_value' => $parent_cvterm_id_1,
   );
   $form['relation_cvterm_id_2'] = array(
     '#title'       => t('Relation 2'),
@@ -362,6 +366,7 @@ dpm($onto_term_submit,'$node->onto_term_submit');
     '#description' => t("Choose the Relation Term  (e.g. is_a)."),
     '#required'    => FALSE,
     '#options' => $all_relations,
+    '#default_value' => $relation_cvterm_id_2,
   );
   $form['parent_cvterm_id_2'] = array(
     '#title'       => t('Parent 2'),
@@ -369,6 +374,7 @@ dpm($onto_term_submit,'$node->onto_term_submit');
     '#description' => t("Choose the Parent Term  (e.g. neuron)."),
     '#required'    => FALSE,
     '#options' => $all_terms,
+    '#default_value' => $parent_cvterm_id_2,
   );
   $form['relation_cvterm_id_3'] = array(
     '#title'       => t('Relation 3'),
@@ -376,6 +382,7 @@ dpm($onto_term_submit,'$node->onto_term_submit');
     '#description' => t("Choose the Relation Term  (e.g. is_a)."),
     '#required'    => FALSE,
     '#options' => $all_relations,
+    '#default_value' => $relation_cvterm_id_3,
   );
   $form['parent_cvterm_id_3'] = array(
     '#title'       => t('Parent 3'),
@@ -383,6 +390,7 @@ dpm($onto_term_submit,'$node->onto_term_submit');
     '#description' => t("Choose the Parent Term  (e.g. neuron)."),
     '#required'    => FALSE,
     '#options' => $all_terms,
+    '#default_value' => $parent_cvterm_id_3,
   );
 
 
@@ -471,7 +479,7 @@ dpm($onto_term_submit,'$node->onto_term_submit');
  * @ingroup tripal_onto_term_submit
  */
 function chado_onto_term_submit_validate($node, $form, &$form_state) {
-
+drupal_set_message("I amhere chado_onto_term_submit_validate", 'warning');
   // We only want to validate when the node is saved.
   // Since this validate can be called on AJAX and Deletion of the node
   // we need to make this check to ensure queries are not executed
@@ -538,7 +546,7 @@ function chado_onto_term_submit_validate($node, $form, &$form_state) {
  * @ingroup tripal_onto_term_submit
  */
 function chado_onto_term_submit_insert($node) {
-
+drupal_set_message("I amhere chado_onto_term_submit_insert", 'warning');
   $onto_term_submit_id = '';
 
   // if there is an onto_term_submit_id in the $node object then this must be a sync so
@@ -564,7 +572,7 @@ function chado_onto_term_submit_insert($node) {
       'type_id' => $node->onto_term_submit_type,
       'definition_ref' => $node->definition_ref['value'],
       'term_xref' => $node->term_xref['value'],
-      'seeAlso_url' => $node->seeAlso_url['value'],
+      'seealso_url' => $node->seealso_url['value'],
       'contact_name' => $node->contact_name['value'],
       'contact_email' => $node->contact_email['value'],
       'comments' => $node->comments['value'],
@@ -660,6 +668,7 @@ dpm($onto_term_submit,'onto_term_submit');
  * @ingroup tripal_onto_term_submit
  */
 function chado_onto_term_submit_update($node) {
+drupal_set_message("I amhere chado_onto_term_submit_update", 'warning');
   // be sure to always trim text fields
   $node->term_name   = trim($node->term_name);
   $node->definition  = trim($node->definition['value']);
@@ -760,7 +769,7 @@ function chado_onto_term_submit_delete($node) {
  * @ingroup tripal_onto_term_submit
  */
 function chado_onto_term_submit_load($nodes) {
-
+drupal_set_message("I amhere chado_onto_term_submit_load", 'warning');
   // EXPLANATION: when displaying or node or accessing the node in a template
   // we need the data from Chado. This function finds the record in Chado that
   // this node belongs to and adds the record.
@@ -793,7 +802,7 @@ function chado_onto_term_submit_load($nodes) {
     $onto_term_submit = chado_expand_var($onto_term_submit, 'field', 'onto_term_submit.definition');
     $onto_term_submit = chado_expand_var($onto_term_submit, 'field', 'onto_term_submit.definition_ref');
     $onto_term_submit = chado_expand_var($onto_term_submit, 'field', 'onto_term_submit.term_xref');
-    $onto_term_submit = chado_expand_var($onto_term_submit, 'field', 'onto_term_submit.seeAlso_url');
+    $onto_term_submit = chado_expand_var($onto_term_submit, 'field', 'onto_term_submit.seealso_url');
     $onto_term_submit = chado_expand_var($onto_term_submit, 'field', 'onto_term_submit.contact_name');
     $onto_term_submit = chado_expand_var($onto_term_submit, 'field', 'onto_term_submit.contact_email');
     $onto_term_submit = chado_expand_var($onto_term_submit, 'field', 'onto_term_submit.comments');
@@ -817,7 +826,7 @@ function chado_onto_term_submit_load($nodes) {
  * @ingroup tripal_onto_term_submit
  */
 function tripal_onto_term_submit_node_presave($node) {
-
+drupal_set_message("I amhere chado_onto_term_submit_presave", 'warning');
   // EXPLANATION: This node is useful for making changes to the node prior to it
   // being saved to the database.
   // One useful case for this is to set the title of a node using values
@@ -906,8 +915,14 @@ dpm($onto_term_submit,'onto_term_submit in tripal_onto_term_submit_node_insert')
       // chado_onto_term_submit_chdo_node_default_url().
 
       // Set the Title and URL for this node.
+drupal_set_message("I amhere tripal_onto_term_submit_node_insert before set title", 'warning');
       $onto_term_submit->title = chado_get_node_title($node);
+dpm($onto_term_submit->title,'chado_get_node_title($node)');
+drupal_set_message("I amhere tripal_onto_term_submit_node_insert after set title", 'warning');
+dpm( $onto_term_submit->title,' $onto_term_submit->title');
       chado_set_node_url($node);
+drupal_set_message("I amhere tripal_onto_term_submit_node_insert after set url", 'warning');
+dpm($node,'tripal_onto_term_submit_node_insert after set url');
       break;
   }
 }
@@ -919,7 +934,7 @@ dpm($onto_term_submit,'onto_term_submit in tripal_onto_term_submit_node_insert')
  *
  */
 function tripal_onto_term_submit_node_update($node) {
-
+drupal_set_message("I amhere tripal_onto_term_submit_node_update", 'warning');
   // EXPLANATION: This function is used after any a node is updated in the
   // database. It is different from the hook_update() function above in that it
   // is called after any node is updated, regardless of it's type.
@@ -957,7 +972,7 @@ function tripal_onto_term_submit_node_update($node) {
  * @ingroup tripal_onto_term_submit
  */
 function tripal_onto_term_submit_node_view($node, $view_mode, $langcode) {
-
+drupal_set_message("I amhere tripal_onto_term_submit_node_view", 'warning');
   // EXPLANATION: This function defines the content "blocks" that appear when
   // the node is displayed. It is node type agnostic so we can add content to
   // any node type. So, we use this function to add the content from all of our
@@ -1057,7 +1072,8 @@ function tripal_onto_term_submit_node_view($node, $view_mode, $langcode) {
  */
 function chado_onto_term_submit_chado_node_default_title_format() {
   //return '[onto_term_submit.uniquename] ([onto_term_submit.type_id>cvterm.name]) [onto_term_submit.organism_id>organism.genus] [onto_term_submit.organism_id>organism.species]';
-  return '[onto_term_submit.term_name] ([onto_term_submit.type_id]) by [onto_term_submit.contact_name]';
+drupal_set_message("I amhere chado_onto_term_submit_chado_node_default_title_format", 'warning');
+  return '[onto_term_submit.term_name] ([onto_term_submit.type_id>cv.name]) by [onto_term_submit.contact_name]';
 }
 
 /**
@@ -1068,5 +1084,5 @@ function chado_onto_term_submit_chado_node_default_title_format() {
 function chado_onto_term_submit_chado_node_default_url_format() {
   //return '/onto_term_submit/[onto_term_submit.organism_id>organism.genus]/[onto_term_submit.organism_id>organism.species]/[onto_term_submit.type_id>cvterm.name]/[onto_term_submit.uniquename]';
 drupal_set_message("I amhere chado_onto_term_submit_chado_node_default_url_format", 'warning');
-  return '/ontology_term_submit/[onto_term_submit.type_id]/[onto_term_submit.term_name]';
+  return '/onto_term_submit/[onto_term_submit.type_id>cv.name]/[onto_term_submit.term_name]';
 }

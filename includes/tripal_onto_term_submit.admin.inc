@@ -48,6 +48,7 @@ function tripal_onto_term_submit_admin_examples_listing() {
  * @ingroup tripal_onto_term_submit
  */
 function tripal_onto_term_submit_admin() {
+drupal_set_message("I amhere tripal_onto_term_submit_admin", 'warning');
   $form = array();
 
   $form['nothing'] = array(
@@ -73,7 +74,8 @@ function tripal_onto_term_submit_admin() {
         // If you have a more human-readable constraint, then that is
         // preferable.
         // See the tripal feature module for a good example of this.
-      '[onto_term_submit.onto_term_submit_id]' => 'Unique Constraint: The Chado ID for Examples'
+      '[onto_term_submit.onto_term_submit_id]' => 'Unique Constraint: The Chado ID for Examples',
+      '[onto_term_submit.type_id>cv.name]' => 'Unique Constraint: The Chado ID for Examples',
     ),
     // the token indicating the unique constraint in the options array
     'unique_option' => '[onto_term_submit.onto_term_submit_id]'
@@ -81,6 +83,25 @@ function tripal_onto_term_submit_admin() {
   // This call adds the configuration form to your current form
   // This sub-form handles it's own validation & submit
   chado_add_admin_form_set_title($form, $form_state, $details);
+
+
+  // FEATURE NODE URL
+  // Using the Chado Node: Title & Path API
+  $details = array(
+    'module' => 'tripal_onto_term_submit',
+    'content_type' => 'chado_onto_term_submit',
+      // An array of options to use under "Page URL"
+      // the key should be the token and the value should be the human-readable option
+    'options' => array(
+      '/onto_term_submit/[onto_term_submit.onto_term_submit_id]' => 'Feature ID',
+        // there should always be one options matching the unique constraint.
+      '/onto_term_submit/[onto_term_submit.type_id>cv.name]/[onto_term_submit.term_name]' => 'Unique Contraint: Includes the name, uniquename, type and scientific name'
+    )
+  );
+  // This call adds the configuration form to your current form
+  // This sub-form handles it's own validation & submit
+  chado_add_admin_form_set_url($form, $form_state, $details);
+
 
   return system_settings_form($form);
 }

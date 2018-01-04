@@ -306,7 +306,7 @@ drupal_set_message("I amhere tripal_onto_term_submit_add_onto_term_submit_table"
         'type' => 'int',
         'not null' => true,
       ),
-      'seeAlso_url' => array(
+      'seealso_url' => array(
         'type' => 'varchar',
         'length' => '255',
       ),
