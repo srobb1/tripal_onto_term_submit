@@ -157,12 +157,6 @@ drupal_set_message("I amhere chado_onto_term_submit_form", 'warning');
   $contact_name  = '';
   $contact_email = '';
   $comments = '';
-  $parent_cvterm_id_1 = '';
-  $parent_cvterm_id_2 = '';
-  $parent_cvterm_id_3 = '';
-  $relation_cvterm_id_1 = '';
-  $relation_cvterm_id_2 = '';
-  $relation_cvterm_id_3 = '';
 
   // if we are editing an existing node then the 'onto_term_submit' record from Chado
   // is already part of the node, so we set the defaults from that object
@@ -179,12 +173,6 @@ dpm($onto_term_submit,'$node->onto_term_submit');
   $contact_name  = $onto_term_submit->contact_name;
   $contact_email = $onto_term_submit->contact_email;
   $comments = $onto_term_submit->comments;
-  $parent_cvterm_id_1 = $onto_term_submit->parent_cvterm_id_1->cvterm_id;
-  $parent_cvterm_id_2 = $onto_term_submit->parent_cvterm_id_2->cvterm_id;
-  $parent_cvterm_id_3 = $onto_term_submit->parent_cvterm_id_3->cvterm_id;
-  $relation_cvterm_id_1 = $onto_term_submit->relation_cvterm_id_1->cvterm_id;
-  $relation_cvterm_id_2 = $onto_term_submit->relation_cvterm_id_2->cvterm_id;
-  $relation_cvterm_id_3 = $onto_term_submit->relation_cvterm_id_3->cvterm_id;
 
     // keep track of the onto_term_submit id
     $form['onto_term_submit_id'] = array(
@@ -204,12 +192,6 @@ dpm($onto_term_submit,'$node->onto_term_submit');
      $contact_name  = $form_state['values']['contact_name'];
      $contact_email  = $form_state['values']['contact_email'];
      $comments  = $form_state['values']['comments'];
-     $parent_cvterm_id_1 = $form_state['values']['parent_cvterm_id_1'];
-     $parent_cvterm_id2 = $form_state['values']['parent_cvterm_id_2'];
-     $parent_cvterm_id_3 = $form_state['values']['parent_cvterm_id_3'];
-     $relation_cvterm_id_1 = $form_state['values']['relation_cvterm_id_1'];
-     $relation_cvterm_id_2 = $form_state['values']['relation_cvterm_id_2'];
-     $relation_cvterm_id_3 = $form_state['values']['relation_cvterm_id_3'];
   }
   // if we are re building the form from after submission (from ajax call) then
   // the values are in the $form_state['input'] array
@@ -223,12 +205,6 @@ dpm($onto_term_submit,'$node->onto_term_submit');
      $contact_name  = $form_state['input']['contact_name'];
      $contact_email  = $form_state['input']['contact_email'];
      $comments  = $form_state['input']['comments'];
-     $parent_cvterm_id_1 = $form_state['input']['parent_cvterm_id_1'];
-     $parent_cvterm_id2 = $form_state['input']['parent_cvterm_id_2'];
-     $parent_cvterm_id_3 = $form_state['input']['parent_cvterm_id_3'];
-     $relation_cvterm_id_1 = $form_state['input']['relation_cvterm_id_1'];
-     $relation_cvterm_id_2 = $form_state['input']['relation_cvterm_id_2'];
-     $relation_cvterm_id_3 = $form_state['input']['relation_cvterm_id_3'];
   }
 
 
@@ -343,57 +319,6 @@ dpm($onto_term_submit,'$node->onto_term_submit');
     foreach ($results as $rr) {
       $all_relations[$rr->cvterm_id] = $rr->name;
     }
-
-  $form['relation_cvterm_id_1'] = array(
-    '#title'       => t('Relation 1'),
-    '#type'        => t('select'),
-    '#description' => t("Choose the Relation Term  (e.g. is_a)."),
-    '#required'    => FALSE,
-    '#options' => $all_relations,
-    '#default_value' => $relation_cvterm_id_1,
-  );
-  $form['parent_cvterm_id_1'] = array(
-    '#title'       => t('Parent 1'),
-    '#type'        => t('select'),
-    '#description' => t("Choose the Parent Term  (e.g. neuron)."),
-    '#required'    => FALSE,
-    '#options' => $all_terms,
-    '#default_value' => $parent_cvterm_id_1,
-  );
-  $form['relation_cvterm_id_2'] = array(
-    '#title'       => t('Relation 2'),
-    '#type'        => t('select'),
-    '#description' => t("Choose the Relation Term  (e.g. is_a)."),
-    '#required'    => FALSE,
-    '#options' => $all_relations,
-    '#default_value' => $relation_cvterm_id_2,
-  );
-  $form['parent_cvterm_id_2'] = array(
-    '#title'       => t('Parent 2'),
-    '#type'        => t('select'),
-    '#description' => t("Choose the Parent Term  (e.g. neuron)."),
-    '#required'    => FALSE,
-    '#options' => $all_terms,
-    '#default_value' => $parent_cvterm_id_2,
-  );
-  $form['relation_cvterm_id_3'] = array(
-    '#title'       => t('Relation 3'),
-    '#type'        => t('select'),
-    '#description' => t("Choose the Relation Term  (e.g. is_a)."),
-    '#required'    => FALSE,
-    '#options' => $all_relations,
-    '#default_value' => $relation_cvterm_id_3,
-  );
-  $form['parent_cvterm_id_3'] = array(
-    '#title'       => t('Parent 3'),
-    '#type'        => t('select'),
-    '#description' => t("Choose the Parent Term  (e.g. neuron)."),
-    '#required'    => FALSE,
-    '#options' => $all_terms,
-    '#default_value' => $parent_cvterm_id_3,
-  );
-
-
 
 
   // PROPERTIES FORM
@@ -581,12 +506,6 @@ drupal_set_message("I amhere chado_onto_term_submit_insert", 'warning');
       'contact_name' => $node->contact_name['value'],
       'contact_email' => $node->contact_email['value'],
       'comments' => $node->comments['value'],
-      'parent_cvterm_id_1' => $node->parent_cvterm_id_1,
-      'relation_cvterm_id_1' => $node->relation_cvterm_id_1,
-      'parent_cvterm_id_2' => $node->parent_cvterm_id_2,
-      'relation_cvterm_id_2' => $node->relation_cvterm_id_2,
-      'parent_cvterm_id_3' => $node->parent_cvterm_id_3,
-      'relation_cvterm_id_2' => $node->relation_cvterm_id_2,
     );
 dpm($node,'node');
 dpm($values,'values');
