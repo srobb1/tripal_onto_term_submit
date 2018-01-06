@@ -401,25 +401,30 @@ dpm($onto_term_submit,'$node->onto_term_submit');
   // If there is a onto_term_submitprop table and you want to allow users to add/remove
   // entries from it through your node form then add this section to your own
   // node form
-/*
-  $prop_cv = tripal_get_default_cv('onto_term_submitprop', 'type_id');
-  $cv_id = $prop_cv ? $prop_cv->cv_id : NULL;
+  //$prop_cv = tripal_get_default_cv('onto_term_submitprop', 'type_id');
+  //$cv_id = $prop_cv ? $prop_cv->cv_id : NULL;
   $details = array(
     // the name of the prop table
     'property_table' => 'onto_term_submitprop',
     // the value of onto_term_submit_id for this record
     'chado_id' => $onto_term_submit_id,
+    'select_options' => $all_relations,
+    'fieldset_title' => 'Add Relationships',
+    'additional_instructions' => 'Additional Instructions Here',
+    'value_options' => $all_terms
+ 
     // the cv.cv_id of the cv governing onto_term_submitprop.type_id
-    'cv_id' => $cv_id
+    //'cv_id' => $cv_id
   );
   // Adds the form elements to your current form
-  chado_add_node_form_properties($form, $form_state, $details);
+  tripal_onto_term_submit_add_node_form_properties($form, $form_state, $details);
 
   // ADDITIONAL DBXREFS FORM
   //---------------------------------------------
   // If there is a onto_term_submit_dbxref table and you want to allow users to
   // add/remove entries from it through your node form then add this section to
   // your own node form
+/*
   $details = array(
     // the name of the _dbxref table
     'linking_table' => 'onto_term_submit_dbxref',
@@ -600,7 +605,7 @@ dpm($onto_term_submit,'onto_term_submit');
     // Only add to other Chado tables if the base record was inserted properly
     if ($onto_term_submit_id > 0) {
 
-/*      // If you implemented the properties form in chado_onto_term_submit_form then you
+      // If you implemented the properties form in chado_onto_term_submit_form then you
       // need to handle inserting these properties into your Chado prop table.
       $details = array(
         // the name of the prop table
@@ -612,8 +617,12 @@ dpm($onto_term_submit,'onto_term_submit');
         // the value of the onto_term_submit_id key
         'foreignkey_value' => $onto_term_submit_id
       );
+drupal_set_message('before chado_update_node_form_properties','warnings');
+dpm($node,'node before chado_update_node_form_properties');
+dpm($details,'details before chado_update_node_form_properties');
       chado_update_node_form_properties($node, $details);
-
+drupal_set_message('after chado_update_node_form_properties','warnings');
+/*
       // If you implemented the dbxrefs form in chado_onto_term_submit_form then you need
       // to handle inserting these database references into your Chado _dbxref
       // table.
@@ -655,6 +664,7 @@ dpm($onto_term_submit,'onto_term_submit');
     $record->vid = $node->vid;
     $record->onto_term_submit_id = $onto_term_submit_id;
     drupal_write_record('chado_onto_term_submit', $record);
+dpm($record,'drupal_write_record(chado_onto_term_submit, $record)');
   }
 }
 
@@ -689,7 +699,7 @@ drupal_set_message("I amhere chado_onto_term_submit_update", 'warning');
       array('%values' => print_r($values, TRUE)));
   }
 
-/*  // If you implemented the properties form in chado_onto_term_submit_form then you need
+  // If you implemented the properties form in chado_onto_term_submit_form then you need
   // to handle updating these properties into your Chado prop table.
   $details = array(
     'property_table' => 'onto_term_submitprop', // the name of the prop table
@@ -698,7 +708,7 @@ drupal_set_message("I amhere chado_onto_term_submit_update", 'warning');
     'foreignkey_value' => $onto_term_submit_id  // the value of the onto_term_submit_id key
   );
   chado_update_node_form_properties($node, $details);
-
+/*
   // If you implemented the dbxrefs form in chado_onto_term_submit_form then you need to
   // handle updating these database references into your Chado _dbxref table.
   $details = array(
@@ -1011,7 +1021,7 @@ drupal_set_message("I amhere tripal_onto_term_submit_node_view", 'warning');
           '#tripal_toc_title' => 'Overview',
           '#weight' => -100,
         );
-/*        // we can add other templates as well for properties, publications,
+        // we can add other templates as well for properties, publications,
         // dbxrefs, etc...
         $node->content['tripal_onto_term_submit_properties'] = array(
           '#theme' => 'tripal_onto_term_submit_properties',
@@ -1019,6 +1029,7 @@ drupal_set_message("I amhere tripal_onto_term_submit_node_view", 'warning');
           '#tripal_toc_id'    => 'properties',
           '#tripal_toc_title' => 'Properties',
         );
+/*
         $node->content['tripal_onto_term_submit_references'] = array(
           '#theme' => 'tripal_onto_term_submit_references',
           '#node' => $node,
@@ -1086,3 +1097,566 @@ function chado_onto_term_submit_chado_node_default_url_format() {
 drupal_set_message("I amhere chado_onto_term_submit_chado_node_default_url_format", 'warning');
   return '/onto_term_submit/[onto_term_submit.type_id>cv.name]/[onto_term_submit.term_name]';
 }
+
+
+
+
+
+function tripal_onto_term_submit_add_node_form_properties(&$form, &$form_state, $details) {
+drupal_set_message("tripal_onto_term_submit_add_node_form_properties", 'warning');
+  // Set defaults for optional fields
+  if (!array_key_exists('fieldset_title', $details)) {
+    $details['fieldset_title'] = 'Properties';
+  }
+  if (!array_key_exists('additional_instructions', $details)) {
+    $details['additional_instructions'] = '';
+  }
+  if (!array_key_exists('default_properties', $details)) {
+    $details['default_properties'] = array();
+  }
+  if (!is_array($details['default_properties'])) {
+    drupal_set_message("The 'default_properties' option must be an array", "error");
+    tripal_report_error('tcprops_form', TRIPAL_ERROR, 
+    "The 'default_properties' option must be an array", 
+    array());
+    return;
+  }
+
+  // make sure the property table exists before proceeding.
+  if (!chado_table_exists($details['property_table'])) {
+    drupal_set_message("Cannot add property elements to the form. The property table, '" .
+      $details['property_table'] . "', does not exists", "error");
+    tripal_report_error('tcprops_form', TRIPAL_ERROR, 
+    "Cannot add property elements to the form. The property table, '%name', cannot be found.", 
+    array('%name' => $details['property_table']));
+    return;
+  }
+
+  // if the chado_id_field is not specified then set it using the
+  // typical chado naming scheme
+  if (!array_key_exists('chado_id_field', $details)) {
+    $chado_id_table = preg_replace('/prop$/', '', $details['property_table']);
+    $chado_id_field = $chado_id_table . '_id';
+    $details['nodetype'] = $chado_id_table;
+    $details['chado_id_field'] = $chado_id_field;
+  }
+  else {
+    $details['nodetype'] = str_replace('_id', '', $details['chado_id_field']);
+  }
+dpm($details,'prp details');
+
+  // make sure the specified cv exists
+  if (isset($details['cv_name'])) {
+    // make sure the cv_name is real
+    $result = chado_select_record('cv', array('cv_id'), array('name' => $details['cv_name']));
+    if (count($result) == 0) {
+      drupal_set_message("Cannot add property elements to the form. The CV name, '" .
+        $details['cv_name'] . "', does not exists", "error");
+      tripal_report_error('tcprops_form', TRIPAL_ERROR, 
+      "Cannot add property elements to the form. The CV named, '%name', cannot be found.", 
+      array('%name' => $details['cv_name']));
+      return;
+    }
+    // add the cv_id option to the details array
+    $details['cv_id'] = $result[0]->cv_id;
+  }
+  elseif (isset($details['cv_id'])) {
+    // make sure the cv_id is real
+    $result = chado_select_record('cv', array('name'), array('cv_id' => $details['cv_id']));
+    if (count($result) == 0) {
+      drupal_set_message("Cannot add property elements to the form. The CV ID, '" .
+        $details['cv_id'] . "', does not exist", "error");
+      tripal_report_error('tcprops_form', TRIPAL_ERROR, 
+      "Cannot add property elements to the form. The CV ID, '%id', cannot be found.", 
+      array('%id' => $details['cv_id']));
+      return;
+    }
+    // add the cv_name option to the details array
+    $details['cv_name'] = $result[0]->name;
+  }
+ elseif( array_key_exists('select_options', $details)) {
+   // check the contents in next block
+ drupal_set_message('select_options are a go!!','warning');
+ }
+  
+  
+  else {
+
+    // If we didn't get given a cv identifier, then try retrieving the default one
+    // using the new cv defaults api
+    $default_cv = tripal_get_default_cv($details['property_table'], 'type_id');
+    if (!empty($default_cv)) {
+      $details['cv_id'] = $default_cv->cv_id;
+      $details['cv_name'] = $default_cv->name;
+    }
+    else {
+      
+      $default_form_link = l('vocabulary defaults configuration page', 
+      'admin/tripal/chado/tripal_cv/defaults', 
+      array('attributes' => array('target' => '_blank')));
+      $message = "There is not a default vocabulary set for Property Types. Please set one using the $default_form_link.";
+
+      if (preg_match('/(\w+)_id/', $details['chado_id_field'], $matches)) {
+        $table = $matches[1];
+        $table = ucwords(str_replace('_', ' ', $table));
+        $message = "There is not a default vocabulary set for $table Property Types. Please set one using the  $default_form_link.";
+      }
+
+      tripal_set_message($message, TRIPAL_WARNING);
+      tripal_report_error('tcprops_form', TRIPAL_ERROR, 
+      "Please provide either a 'cv_name' or 'cv_id' as an option for adding properties to the form", 
+      array());
+    }
+    return;
+  }
+
+  // Get property types for the select list. If the user has provided a set
+  // then use those, otherwise get them from the cvterm table for specified cv.
+  if (array_key_exists('select_options', $details) and 
+    is_array($details['select_options'])) {
+    $property_options = $details['select_options'];
+  }
+  // if the select options are not provided then try to get them on our own
+  else {
+    // if the vocabulary name is provided in the details then use that to
+    // get the terms
+    if (isset($details['cv_name'])) {
+      $property_options = array();
+      $property_options[] = 'Select a Property';
+      $sql = "
+        SELECT DISTINCT CVT.cvterm_id, CVT.name, CVT.definition, CV.cv_id as cv_id
+        FROM  {cvterm} CVT
+          INNER JOIN {cv} CV ON CVT.cv_id = CV.cv_id
+        WHERE
+          CV.name = :cv_name AND
+          NOT CVT.is_obsolete = 1
+        ORDER BY CVT.name ASC
+      ";
+      $prop_types = chado_query($sql, array(':cv_name' => $details['cv_name']));
+      while ($prop = $prop_types->fetchObject()) {
+        $property_options[$prop->cvterm_id] = $prop->name;
+      }
+    }
+    // if the cv_id is set in the $details array then use that to get the terms
+    elseif (isset($details['cv_id'])) {
+      $property_options = array();
+      $property_options[] = 'Select a Property';
+      $sql = "
+        SELECT DISTINCT CVT.cvterm_id, CVT.name, CVT.definition, CV.name as cv_name
+        FROM  {cvterm} CVT
+          INNER JOIN {cv} CV ON CVT.cv_id = CV.cv_id
+        WHERE
+          CV.cv_id = :cv_id AND
+          NOT CVT.is_obsolete = 1
+        ORDER BY CVT.name ASC
+      ";
+      $prop_types = chado_query($sql, array(':cv_id' => $details['cv_id']));
+      while ($prop = $prop_types->fetchObject()) {
+        $property_options[$prop->cvterm_id] = $prop->name;
+      }
+    }
+  }
+
+  // Tell tripal administrators how to add terms to the property types drop down.
+  if (empty($property_options)) {
+    $tripal_message = tripal_set_message(
+    t('There are currently no property types! To add properties to the drop
+        down list, you need to <a href="@cvtermlink">add a controlled vocabulary term</a>
+        to the %cv_name controlled vocabulary.', 
+    array(
+      '%cv_name' => $details['cv_name'],
+      '@cvtermlink' => url('admin/tripal/chado/tripal_cv/cv/' . $details['cv_id'] . '/cvterm/add')
+    )
+    ), 
+    TRIPAL_NOTICE, 
+    array('return_html' => TRUE)
+    );
+  }
+  else {
+    $tripal_message = tripal_set_message(
+    t('To add additional properties to the drop down list, you need to <a href="@cvtermlink">add
+        a controlled vocabulary term</a> to the %cv_name controlled vocabulary.', 
+    array(
+      '%cv_name' => $details['cv_name'],
+      '@cvtermlink' => url('admin/tripal/chado/tripal_cv/cv/' . $details['cv_id'] . '/cvterm/add')
+    )
+    ), 
+    TRIPAL_INFO, 
+    array('return_html' => TRUE)
+    );
+  }
+  dpm($property_options,'prop_options');
+  // Group all of the chado node api fieldsets into vertical tabs.
+  $form['chado_node_api'] = array(
+    '#type' => 'vertical_tabs',
+    '#attached' => array(
+      'css' => array(
+        'chado-node-api' => drupal_get_path('module', 'tripal_core') . '/theme/css/chado_node_api.css',
+      ),
+    ),
+  );
+
+  // the fieldset of the property elements
+  $instructions = 'To add properties of the current %nodetype, select the type of 
+      information from the drop-down below and enter the information in the text box before 
+      clicking "Add". To remove incorrect information, click the "Remove" button. 
+      Note: you cannot edit previously added information but instead need to 
+      remove and re-add it.';
+  $form['properties'] = array(
+    '#type' => 'fieldset',
+    '#title' => t($details['fieldset_title']),
+    '#description' => t('<p><strong>Additional information about a 
+      %nodetype.</strong></p><p>' . $instructions . $details['additional_instructions'] . '</p>', array('%nodetype' => $details['nodetype'])),
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+    '#group' => 'chado_node_api',
+    '#weight' => 8,
+    '#attributes' => array('class' => array('chado-node-api', 'properties')),
+    '#attached' => array(
+      'js' => array(
+        'chado-node-api-vertical-tabs' => drupal_get_path('module', 'tripal_core') . '/theme/js/chadoNodeApi_updateVerticalTabSummary.js',
+      ),
+    ),
+  );
+
+  // this form element is a tree, so that we don't puke all of the values into then node variable
+  // it is set as a tree, and keeps them in the $form_state['values']['property_table'] heading.
+  $form['properties']['property_table'] = array(
+    '#type' => 'markup',
+    '#tree' => TRUE,
+    '#prefix' => '<div id="tripal-generic-edit-properties-table">',
+    '#suffix' => '</div>',
+    '#theme' => 'chado_node_properties_form_table'
+  );
+
+  // We need to provide feedback to the user that changes made
+  // are not saved until the node is saved.
+  $form['properties']['property_table']['save_warning'] = array(
+    '#type' => 'markup',
+    '#prefix' => '<div id="property-save-warning" class="messages warning" style="display:none;">',
+    '#suffix' => '</div>',
+    '#markup' => '* The changes to these properties will not be saved until the 
+      "Save" button at the bottom of this form is clicked. <span class="specific-changes"></span>',
+    '#attached' => array(
+      'js' => array(
+        'chado-node-api-unsaved' => drupal_get_path('module', 'tripal_core') . '/theme/js/chadoNodeApi_unsavedNotify.js',
+      ),
+    ),
+  );
+
+  // Add defaults into form_state to be used elsewhere
+  $form['properties']['property_table']['details'] = array(
+    '#type' => 'hidden',
+    '#value' => serialize($details)
+  );
+
+  dpm($form,'form');
+  /* Properties can come to us in two ways:
+   * 1) As entries in the $details['default_properties'] option
+   *
+   * 2) In the form state in the $form_state['chado_properties']. Data is in this field
+   *    when an AJAX call updates the form state or a validation error.
+   *
+   * 3) Directly from the database if the record already has properties associated.  This
+   *    data is only used the first time the form is loaded. On AJAX calls or validation
+   *    errors the fields on the form are populated from the $form_state['chado_properties']
+   *    entry.
+   */
+  if (isset($form_state['chado_properties'])) {
+    $existing_properties = $form_state['chado_properties'];
+dpm($existing_properties,'if existing_properties');
+dpm($form_state,'if formstate');
+  }
+  else {
+
+    // build the SQL for extracting properties already assigned to this record
+    $sql_args = array();
+    $sql_args[':chado_id'] = $details['chado_id'];
+    // NOT USING DEFAULT or ASSIGNED CV in tripal_onto_term_submit
+   /*
+    if (array_key_exists('cv_name', $details)) {
+      $cv_where = "AND CV.name = :cvname";
+      $sql_args[':cvname'] = $details['cv_name'];
+    }
+    elseif (array_key_exists('cv_id', $details)) {
+      $cv_where = "AND CV.cv_id = :cvid";
+      $sql_args[':cvid'] = $details['cv_id'];
+    }
+   */
+    $existing_properties = chado_query(
+    "SELECT
+         PP." . $details['property_table'] . "_id property_id,
+         CVT.cvterm_id as type_id,
+         CVT.name as type_name,
+         CVT.definition,
+         CVT2.name as parent_name,
+         CVT2.definition as parent_definition,
+         PP.value as parent_type_id,
+         PP.rank
+       FROM {" . $details['property_table'] . "} PP
+         INNER JOIN {cvterm} CVT ON CVT.cvterm_id = PP.type_id
+         INNER JOIN {cvterm} CVT2 ON CVT2.cvterm_id = PP.value
+       WHERE
+         PP." . $details['chado_id_field'] . " = :chado_id 
+       ORDER BY CVT.name, PP.rank", $sql_args)->fetchAll();
+
+dpm($existing_properties,'else existing_properties');
+    // next add in any default properties
+    if (array_key_exists('default_properties', $details)) {
+
+      // next iterate through each of the default properties and create a new
+      // stdClass array that contains the fields needed.
+/*not using default properites
+      foreach ($details['default_properties'] as $property) {
+        $new_prop = new stdClass();
+        $new_prop->type_id = $property['cvterm']->cvterm_id;
+        $new_prop->type_name = $property['cvterm']->name;
+        $new_prop->definition = $property['cvterm']->definition;
+        $new_prop->value = $property['value'];
+        $new_prop->property_id = 'TEMP' . uniqid();
+        $new_prop->rank = 'TEMP' . uniqid();
+        $existing_properties[] = $new_prop;
+      }
+*/
+    }
+  }
+  /* The format of the $existing_properties array is either:
+   *
+   * From the chado_properties array:
+   * $form_state['chado_properties'] = array(
+   *   '[type_id]-[rank]' => array(
+   *     'type_id' => [the cvterm.cvterm_id value]
+   *     'type_name' => [the cvterm.name value]
+   *     'property_id' => [the property.property_id value, or temporary value if it doesn't yet exist],
+   *     'parent_type_id' => [the BASEprop.value value],  // was 'value' => 
+   *     'parent_name' => [the BASEprop.value value],  
+   *     'parent_definition' => [the BASEprop.value value],  
+   *     'rank' => [the BASEprop.rank value or NULL if not saved yet],
+   *   ),
+   * );
+   *
+   * OR
+   * Populated from the database:
+   * $existing_property = array(
+   *   0 => array(
+   *     'property_id' => [the property.property_id value],
+   *     'type_id' => [the cvterm.cvterm_id value]
+   *     'type_name' => [the cvterm.name value]
+   * //    'value' => [the BASEprop.value value],
+   *     'parent_type_id' => [the BASEprop.value value],  // was 'value' => 
+   *     'parent_name' => [the BASEprop.value value],  
+   *     'parent_definition' => [the BASEprop.value value],  
+   *     'rank' => [the BASEprop.rank value],
+   *   ),
+   * );
+   *
+   * NOTE: The main difference is the key
+   *
+   * Loop on the array elements of the $existing_properties array and add
+   * an element to the form for each one as long as it's also in the
+   * $properties_options array.
+   */
+  $num_properties = 0;
+  foreach ($existing_properties as $property) {
+    if (array_key_exists($property->type_id, $property_options)) {
+      $num_properties++;
+
+      $form['properties']['property_table'][$property->type_id]['#type'] = 'markup';
+      $form['properties']['property_table'][$property->type_id]['#value'] = 'markup';
+
+      $form['properties']['property_table'][$property->type_id][$property->property_id]['#type'] = 'markup';
+      $form['properties']['property_table'][$property->type_id][$property->property_id]['#value'] = 'markup';
+      $form['properties']['property_table'][$property->type_id][$property->property_id]['#attributes'] = array(
+        'class' => array('property', 'saved')
+      );
+
+      // Determine whether this property is unsaved or not.
+      // We can tell this by looking at the property_id: if it's not
+      // saved yet we will have entered a TEMP###.
+      if (preg_match('/^TEMP/', $property->property_id)) {
+        $form['properties']['property_table'][$property->type_id][$property->property_id]['#attributes'] = array(
+          'class' => array('property', 'unsaved')
+        );
+      }
+
+      $form['properties']['property_table'][$property->type_id][$property->property_id]['prop_type_id'] = array(
+        '#type' => 'hidden',
+        '#value' => $property->type_id
+      );
+
+      $form['properties']['property_table'][$property->type_id][$property->property_id]['prop_value'] = array(
+        '#type' => 'hidden',
+        '#value' => $property->value
+      );
+
+      $form['properties']['property_table'][$property->type_id][$property->property_id]['prop_rank'] = array(
+        '#type' => 'hidden',
+        '#value' => $property->rank
+      );
+
+      $form['properties']['property_table'][$property->type_id][$property->property_id]['property_id'] = array(
+        '#type' => 'hidden',
+        '#value' => $property->property_id
+      );
+
+      $form['properties']['property_table'][$property->type_id][$property->property_id]['type'] = array(
+        '#type' => 'markup',
+        '#markup' => $property->type_id,
+        '#prefix' => '<span class="row-unsaved-warning"></span>'
+      );
+      // If a definition is available we want to add that to the type column
+      // to make it easier for users to determine what an added property means.
+      if (isset($property->definition)) {
+        $form['properties']['property_table'][$property->type_id][$property->property_id]['type']['#markup'] = $property->type_name . '<br><i>' . $property->definition . '</i>';
+      }
+
+
+
+      $form['properties']['property_table'][$property->type_id][$property->property_id]['value'] = array(
+        '#type' => 'markup',
+        '#markup' => $property->value ,
+        '#prefix' => '<span class="row-unsaved-warning"></span>'
+      );
+    $new_term = tripal_get_cvterm(array('cvterm_id' => $property->value));
+    if ($new_term) {
+      $property->parent_definition = $new_term->definition;
+      $property->parent_name = $new_term->name;
+    }
+dpm($property,'property');
+
+      if (isset($property->parent_definition)) {
+        $form['properties']['property_table'][$property->type_id][$property->property_id]['value']['#markup'] = $property->parent_name . '<br><i>' . $property->parent_definition . '</i>';
+      }
+
+
+
+      $form['properties']['property_table'][$property->type_id][$property->property_id]['rank'] = array(
+        '#type' => 'markup',
+        '#markup' => $property->rank
+      );
+      // remove button
+      $form['properties']['property_table'][$property->type_id][$property->property_id]['property_action'] = array(
+        '#type' => 'submit',
+        '#value' => t('Remove'),
+        '#name' => "properties_remove-" . $property->type_id . '-' . $property->property_id,
+        '#ajax' => array(
+          'callback' => "chado_add_node_form_subtable_ajax_update",
+          'wrapper' => 'tripal-generic-edit-properties-table',
+          'effect' => 'fade',
+          'method' => 'replace',
+          'prevent' => 'click'
+        ),
+        // When this button is clicked, the form will be validated and submitted.
+        // Therefore, we set custom submit and validate functions to override the
+        // default node form submit.  In the validate function we validate only the
+        // property fields and in the submit we remove the indicated property
+        // from the chado_properties array. In order to keep validate errors
+        // from the node form validate and Drupal required errors for non-property fields
+        // preventing the user from removing properties we set the #limit_validation_errors below
+        '#validate' => array('chado_add_node_form_subtables_remove_button_validate'),
+        '#submit' => array('chado_add_node_form_subtables_remove_button_submit'),
+        // Limit the validation of the form upon clicking this button to the property_table tree
+        // No other fields will be validated (ie: no fields from the main form or any other api
+        // added form).
+        '#limit_validation_errors' => array(
+          array('property_table') // Validate all fields within $form_state['values']['property_table']
+        ),
+      );
+    }
+  }
+
+  // Quickly add a hidden field stating how many properties are currently added.
+  $form['properties']['num_properties'] = array(
+    '#type' => 'hidden',
+    '#value' => $num_properties,
+    '#attributes' => array('class' => 'num-properties')
+  );
+
+  // Form elements for adding a new property
+  //---------------------------------------------
+  $form['properties']['property_table']['new'] = array(
+    '#type' => 'markup',
+    '#prefix' => '<span class="addtl-properties-add-new-property">',
+    '#suffix' => '</span>'
+  );
+
+  // get the value selected (only works on AJAX call) and print the
+  // description
+  $type_desc = '';
+  if (isset($form_state['input']['property_table']['new']['type'])) {
+    $new_type_id = $form_state['input']['property_table']['new']['type'];
+    $new_term = tripal_get_cvterm(array('cvterm_id' => $new_type_id));
+    if ($new_term) {
+      $type_desc = $new_term->definition;
+    }
+  }
+  $parent_desc = '';
+  if (isset($form_state['input']['property_table']['new']['value'])) {
+    $new_type_id = $form_state['input']['property_table']['new']['value'];
+    $new_term = tripal_get_cvterm(array('cvterm_id' => $new_type_id));
+    if ($new_term) {
+      $parent_desc = $new_term->definition;
+    }
+  }
+  $form['properties']['property_table']['new']['type'] = array(
+    '#type' => 'select',
+    '#options' => $property_options, // Set at top of form
+    '#prefix' => '<span id="tripal-generic-edit-properties-new-desc">',
+    '#suffix' => '<i>' . $type_desc . '</i></span>',
+    '#ajax' => array(
+      'callback' => "chado_add_node_form_properties_ajax_desc",
+      'wrapper' => 'tripal-generic-edit-properties-new-desc',
+      'effect' => 'fade',
+      'method' => 'replace',
+    ),
+  );
+
+  $form['properties']['property_table']['new']['value'] = array(
+    '#type' => 'select',
+    '#options' => $details['value_options'],
+    '#prefix' => '<span id="tripal-generic-edit-properties-new-desc">',
+    '#suffix' => '<i>' . $parent_desc . '</i></span>',
+    '#ajax' => array(
+      'callback' => "chado_add_node_form_properties_ajax_desc",
+      'wrapper' => 'tripal-generic-edit-properties-new-desc',
+      'effect' => 'fade',
+      'method' => 'replace',
+    ),
+  );
+
+  // add button
+  $form['properties']['property_table']['new']['property_action'] = array(
+    '#type' => 'submit',
+    '#value' => t('Add'),
+    '#name' => "properties-add",
+    '#ajax' => array(
+      'callback' => "chado_add_node_form_subtable_ajax_update",
+      'wrapper' => 'tripal-generic-edit-properties-table',
+      'effect' => 'fade',
+      'method' => 'replace',
+      'prevent' => 'click'
+    ),
+    // When this button is clicked, the form will be validated and submitted.
+    // Therefore, we set custom submit and validate functions to override the
+    // default node form submit.  In the vali date function we validate only the
+    // additional property fields and in the submit we add them to the chado_properties
+    // array. In order to keep validate errors from the node form validate and Drupal
+    // required errors for non-property fields preventing the user from adding properties we
+    // set the #limit_validation_errors below
+    '#validate' => array('chado_add_node_form_subtables_add_button_validate'),
+    '#submit' => array('chado_add_node_form_subtables_add_button_submit'),
+    // Limit the validation of the form upon clicking this button to the property_table tree
+    // No other fields will be validated (ie: no fields from the main form or any other api
+    // added form).
+    '#limit_validation_errors' => array(
+      array('property_table') // Validate all fields within $form_state['values']['property_table']
+    )
+  );
+
+  $form['properties']['admin_message'] = array(
+    '#type' => 'markup',
+    '#markup' => $tripal_message
+  );
+}
+
+

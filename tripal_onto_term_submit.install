@@ -263,7 +263,7 @@ drupal_set_message("I amhere tripal_onto_term_submit_add_custom_tables", 'warnin
   // function called here:
 
   tripal_onto_term_submit_add_onto_term_submit_table();
-//  tripal_onto_term_submit_add_onto_term_submitprop_table();
+  tripal_onto_term_submit_add_onto_term_submitprop_table();
 //  tripal_onto_term_submit_add_onto_term_submit_relationship_table();
 //  tripal_onto_term_submit_add_onto_term_submit_dbxref_table();
 }
@@ -429,6 +429,7 @@ drupal_set_message("I amhere tripal_onto_term_submit_add_onto_term_submit_table"
     // a foreign key relationships with this table. This information is required
     // for the Tripal API to be able to expand tables in templates.
     'referring_tables' => array(
+        0 => 'onto_term_submitprop',
 //      0 => 'onto_term_submit_relationship',
 //      1 => 'onto_term_submitprop',
 //      2 => 'onto_term_submit_dbxref',
@@ -444,8 +445,63 @@ drupal_set_message("I amhere tripal_onto_term_submit_add_onto_term_submit_table"
 function tripal_onto_term_submit_add_onto_term_submitprop_table() {
   // EXPLANATION: use the Drupal Schema API to describe the custom table. Then
   // add the table using the chado_create_custom_table() function.
-/*
-*/
+
+// Add the onto_term_submitprop table
+  $schema =  array(
+    'table' => 'onto_term_submitprop',
+    'fields' => array(
+      'onto_term_submitprop_id' => array(
+        'type' => 'serial',
+        'not null' => TRUE,
+      ),
+      'onto_term_submit_id' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+      ),
+      // value is the parent type_id
+      'value' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+      ),
+      //type_id is the relationship type_id
+      'type_id' => array(
+        'type' => 'int',
+        'not null' => FALSE,
+      ),
+      'rank' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+      ),
+    ),
+    'primary key' => array(
+      0 => 'onto_term_submitprop_id',
+    ),
+    'unique keys' => array(
+      'onto_term_submit_id_type_id_rank' => array(
+        0 => 'onto_term_submit_id',
+        1 => 'type_id',
+        2 => 'value',
+        3 => 'rank',
+      ),
+    ),
+    'foreign keys' => array(
+      'cvterm' => array(
+        'table' => 'cvterm',
+        'columns' => array(
+          'type_id' => 'cvterm_id',
+          'value' => 'cvterm_id',
+        ),
+      ),
+      'onto_term_submit' => array(
+        'table' => 'onto_term_submit',
+        'columns' => array(
+          'onto_term_submit_id' => 'onto_term_submit_id',
+        ),
+      ),
+    ),
+  );
+  chado_create_custom_table('onto_term_submitprop', $schema, TRUE);
+
 
 }
 
