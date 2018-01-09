@@ -32,13 +32,13 @@ version = 7.x-2.1
 ; Style-sheets containing CSS that should always be available for the
 ; module should be specified here.
 ;
-stylesheets[all][] = theme/css/tripal_ontology_term_submission.css
+stylesheets[all][] = theme/css/tripal_onto_term_submit.css
 
 ;
 ; Javascript files that should always be available for the
 ; module should be specified here.
 ;
-scripts[]          = theme/js/tripal_ontology_term_submission.js
+scripts[]          = theme/js/tripal_onto_term_submit.js
 
 ;
 ; Add additional dependencies for other modules using the module project name.

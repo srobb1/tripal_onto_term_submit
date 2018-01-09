@@ -319,40 +319,10 @@ drupal_set_message("I amhere tripal_onto_term_submit_add_onto_term_submit_table"
       'comments' => array(
         'type' => 'text',
       ),
-      'parent_cvterm_id_1' => array(
+      'status' => array(
         'type' => 'int',
       ),
-      'parent_cvterm_name_1' => array(
-        'type' => 'text',
-      ),
-      'relation_cvterm_id_1' => array(
-        'type' => 'int',
-      ),
-      'relation_cvterm_name_1' => array(
-        'type' => 'text',
-      ),
-      'parent_cvterm_id_2' => array(
-        'type' => 'int',
-      ),
-      'parent_cvterm_name_2' => array(
-        'type' => 'text',
-      ),
-      'relation_cvterm_id_2' => array(
-        'type' => 'int',
-      ),
-      'relation_cvterm_name_2' => array(
-        'type' => 'text',
-      ),
-      'parent_cvterm_id_3' => array(
-        'type' => 'int',
-      ),
-      'parent_cvterm_name_3' => array(
-        'type' => 'text',
-      ),
-      'relation_cvterm_id_3' => array(
-        'type' => 'int',
-      ),
-      'relation_cvterm_name_3' => array(
+      'status_notes' => array(
         'type' => 'text',
       ),
     ),
@@ -375,49 +345,6 @@ drupal_set_message("I amhere tripal_onto_term_submit_add_onto_term_submit_table"
       ),
     ),
     'foreign keys' => array(
-      'cvterm' => array(
-        'table' => 'cvterm',
-        'columns' => array(
-          'parent_cvterm_id_1' => 'cvterm_id',
-          'parent_cvterm_id_2' => 'cvterm_id',
-          'parent_cvterm_id_3' => 'cvterm_id',
-          'relation_cvterm_id_1' => 'cvterm_id',
-          'relation_cvterm_id_2' => 'cvterm_id',
-          'relation_cvterm_id_3' => 'cvterm_id',
-        ),
-    ),
-/*
-      'parent_cvterm_id_two' => array(
-        'table' => 'cvterm',
-        'columns' => array(
-          'parent_cvterm_id_2' => 'cvterm_id',
-        ),
-    ),
-      'parent_cvterm_id_three' => array(
-        'table' => 'cvterm',
-        'columns' => array(
-          'parent_cvterm_id_3' => 'cvterm_id',
-        ),
-    ),
-      'relation_cvterm_id_one' => array(
-        'table' => 'cvterm',
-        'columns' => array(
-          'relation_cvterm_id_1' => 'cvterm_id',
-        ),
-    ),
-      'relation_cvterm_id_two' => array(
-        'table' => 'cvterm',
-        'columns' => array(
-          'relation_cvterm_id_2' => 'cvterm_id',
-        ),
-    ),
-      'relation_cvterm_id_three' => array(
-        'table' => 'cvterm',
-        'columns' => array(
-          'relation_cvterm_id_3' => 'cvterm_id',
-        ),
-    ),
-*/
       'cv' => array(
         'table' => 'cv',
         'columns' => array(

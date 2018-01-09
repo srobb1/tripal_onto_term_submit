@@ -71,7 +71,6 @@ function tripal_onto_term_submit_node_info() {
  * be implemented by other modules.
  */
 function tripal_onto_term_submit_node_access($node, $op, $account) {
-drupal_set_message("I amhere tripal_onto_term_submit_node_access", 'warning');
   $node_type = $node;
   if (is_object($node)) {
     $node_type = $node->type;
@@ -113,7 +112,6 @@ drupal_set_message("I amhere tripal_onto_term_submit_node_access", 'warning');
  * @ingroup tripal_onto_term_submit
  */
 function chado_onto_term_submit_form($node, &$form_state) {
-drupal_set_message("I amhere chado_onto_term_submit_form", 'warning');
   // EXPLANATION: This function should construct a form array that is used by
   // Drupal to construct a form for inserting or editing our new node type.
   // See this page for information about the Form API:
@@ -128,7 +126,11 @@ drupal_set_message("I amhere chado_onto_term_submit_form", 'warning');
   // For the onto_term_submit code below we assume that the fake 'onto_term_submit' table only has
   // a uniquename, organism_id, type_id and onto_term_submit_id.
 
+  global $user;
   $form = array();
+  $admin_rid = user_role_load_by_name('administrator')->rid; // admin want to also add ontology_curator
+  $onto_curator_rid = user_role_load_by_name('ontology_curator')->rid; // admin want to also add ontology_curator
+
 
   // Default values can come in the following ways:
   //
@@ -157,12 +159,13 @@ drupal_set_message("I amhere chado_onto_term_submit_form", 'warning');
   $contact_name  = '';
   $contact_email = '';
   $comments = '';
+  $status = '';
+  $status_notes= '';
 
   // if we are editing an existing node then the 'onto_term_submit' record from Chado
   // is already part of the node, so we set the defaults from that object
   if (property_exists($node, 'onto_term_submit')) {
     $onto_term_submit = $node->onto_term_submit;
-dpm($onto_term_submit,'$node->onto_term_submit');
     $onto_term_submit_id   = $onto_term_submit->onto_term_submit_id;
     $term_name   = $onto_term_submit->term_name;
     $definition  = $onto_term_submit->definition;
@@ -173,6 +176,8 @@ dpm($onto_term_submit,'$node->onto_term_submit');
   $contact_name  = $onto_term_submit->contact_name;
   $contact_email = $onto_term_submit->contact_email;
   $comments = $onto_term_submit->comments;
+  $status = $onto_term_submit->status;
+  $status_notes = $onto_term_submit->status_notes;
 
     // keep track of the onto_term_submit id
     $form['onto_term_submit_id'] = array(
@@ -192,6 +197,8 @@ dpm($onto_term_submit,'$node->onto_term_submit');
      $contact_name  = $form_state['values']['contact_name'];
      $contact_email  = $form_state['values']['contact_email'];
      $comments  = $form_state['values']['comments'];
+     $status  = $form_state['values']['status'];
+     $status_notes  = $form_state['values']['status_notes'];
   }
   // if we are re building the form from after submission (from ajax call) then
   // the values are in the $form_state['input'] array
@@ -205,6 +212,8 @@ dpm($onto_term_submit,'$node->onto_term_submit');
      $contact_name  = $form_state['input']['contact_name'];
      $contact_email  = $form_state['input']['contact_email'];
      $comments  = $form_state['input']['comments'];
+     $status  = $form_state['input']['status'];
+     $status_notes  = $form_state['input']['status_notes'];
   }
 
 
@@ -215,13 +224,12 @@ dpm($onto_term_submit,'$node->onto_term_submit');
     '#title' => t('Term Name'),
     '#required' => TRUE,
     '#default_value' => $term_name,
-    '#description' => t('Enter a new term name.'),
+    '#description' => t('Enter a new term name. If you want to suggest changes to an existing term, type existing term name followed by a star(*). For example, if you want to edit any part of the term "head" type head*'),
     '#maxlength' => 255
   );
 
   // for the type_id we want to use the default vocabulary so that this field
   // can have auto-complete functionality
-  //$cv_id = $onto_term_submit_type->cv_id;
   $cv_id = $onto_term_submit_type;
      $sql = "SELECT distinct cv.cv_id , cv.name
          FROM {cv} cv
@@ -235,66 +243,92 @@ dpm($onto_term_submit,'$node->onto_term_submit');
       $libraries[$library->cv_id] = $library->name;
     }
   $form['onto_term_submit_type'] = array(
-    '#title'       => t('Ontology Term Submission Type'),
+    '#title'       => t('Term Library'),
     '#type'        => t('select'),
-    '#description' => t("Choose the onto_term_submit type (e.g. Test Type)."),
+    '#description' => t("Choose the library for which you would like to add a term."),
     '#required'    => TRUE,
     '#options' => $libraries,
-//    '#selected' => $cv_id,
     '#default_value' => $onto_term_submit_type
   );
-
   $form['term_xref'] = array(
     '#type' => 'text_format',
     '#title' => t('Term Reference'),
     '#required' => TRUE,
     '#default_value' => $definition_ref,
-    '#description' => t('Enter a reference for the term'),
+    '#description' => t('Where was this term first published? Enter a PMID or a Ontology ID, i.e, UBERON:0000955, for the term. If a PMID does not exist, enter a citation. More than one PMID, Ontology ID,  or citation can be included.'),
+    '#format' => 'plain_text'
   );
-
 
   $form['definition'] = array(
     '#type' => 'text_format',
     '#title' => t('Definition'),
     '#required' => TRUE,
     '#default_value' => $definition,
-    '#description' => t('Enter a def for this onto_term_submit.'),
+    '#description' => t('Enter a definition for this term.'),
+    '#format' => 'plain_text'
+
   ); 
+
   $form['definition_ref'] = array(
     '#type' => 'text_format',
     '#title' => t('Definition Reference'),
     '#required' => TRUE,
     '#default_value' => $definition_ref,
-    '#description' => t('Enter a def reference for this onto_term_submit.'),
+    '#description' => t('Where was this definition first published? Enter a PMID, Ontology ID, or citation for this term. More than one can be included.'),
+    '#format' => 'plain_text'
   ); 
+
   $form['seealso_url'] = array(
-    '#type' => 'text_format',
-    '#title' => t('seealso URL'),
+    '#type' => 'textfield',
+    '#title' => t('More Informtion URL'),
     '#default_value' => $seealso_url,
-    '#description' => t('Enter a URL for more rich info for this onto_term_submit.'),
+    '#description' => t('Enter a URL for more rich information for this term.  This page could contain images, suppplemenatry figures, or a more indepth write up. The URL should be on site you control, i.e, GitHub Repository or Lab Website. An example: https://planosphere.stowers.org/stage5'),
+    '#maxlength' => 255
   );
 
   $form['contact_name'] = array(
-    '#type' => 'text_format',
+    '#type' => 'textfield',
     '#title' => t('Your Name'),
     '#required' => TRUE,
     '#default_value' => $contact_name,
-    '#description' => t('Enter your name for this onto_term_submit.'),
+    '#description' => t('Enter your name.'),
   );
+
   $form['contact_email'] = array(
-    '#type' => 'text_format',
+    '#type' => 'textfield',
     '#title' => t('Your E-mail address'),
     '#required' => TRUE,
     '#default_value' => $contact_email,
-    '#description' => t('Enter your email address for us to contact you about this onto_term_submit.'),
+    '#description' => t('Enter your email address for us to contact you about this submission.'),
   );
+
   $form['comments'] = array(
     '#type' => 'text_format',
     '#title' => t('Any Comments'),
     '#default_value' => $comments,
-    '#description' => t('Enter any comments about this onto_term_submit.'),
+    '#description' => t('Enter any comments about this term or submission. If a relationship (see below) term does not exist, add it here, denoted with a star(*). For example, NewTerm eats* brain. "NewTerm" is your new term name, "eats*" is the new relationship term, and "brain" is a term that is being related to your term. If the related term does not exist, add it here, denoted with a star(*). For example, NewTerm is_a NewRelationTerm*. Make sure to create a submission for any new relationship and relation terms.' ),
+    '#format' => 'plain_text'
+  );
+
+if (isset($user->roles[$admin_rid]) or isset($user->roles[$onto_curator_rid])){
+  $form['status'] = array(
+    '#type' => t('select'),
+    '#title' => t('Status'),
+    '#options' => array('Requested','Reviewing', 'Committed', 'Contacted Author', 'Incomplete', 'Issues', 'Done'),
+    //'#options' => array(0 => 'Requested',1 => 'Reviewing',2 => 'Committed',3 => 'Contacted Author',4 => 'Incomplete',5 => 'Issues',6 => 'Done'),
+    '#default_value' => $status,
+    '#description' => t('Select the appropriate term to indicate the workflow progress.'),
 
   );
+  $form['status_notes'] = array(
+    '#type' => 'text_format',
+    '#title' => t('Status Notes'),
+    '#default_value' => $status_notes,
+    '#description' => t('Enter any notes about workflow progress.'),
+    '#format' => 'plain_text'
+  );
+// $form['status_notes']['format']['#access'] = FALSE;
+}
      $sql = "SELECT distinct cvt.cvterm_id , cvt.name
          FROM {cvterm} cvt, {cv} cv
          WHERE cv.name in ('Planarian_Anatomy' , 'Schmidtea_mediterranea_Developmental_Terms' , 'Schmidtea_mediterranea_Developmental_Stages')
@@ -388,6 +422,9 @@ dpm($onto_term_submit,'$node->onto_term_submit');
 
   // return the form
 */
+ $form['#after_build'][] = 'tripal_onto_term_submit_customize_comment_form';
+ $form['definition']['#format'] = 'plain_text';
+ // $form['definition']['format']['format']['#access']=FALSE;
   return $form;
 }
 
@@ -408,8 +445,22 @@ dpm($onto_term_submit,'$node->onto_term_submit');
  *
  * @ingroup tripal_onto_term_submit
  */
+
+
+function tripal_onto_term_submit_customize_comment_form(&$form) {
+  foreach (array('definition', 'term_xref' , 'definition_ref' , 'comments' , 'status_notes') as $field){
+
+    $form[$field]['format']['format']['#access']=FALSE;
+    $form[$field]['format']['format']['#default_value']='plain_text';
+    $form[$field]['format']['help']['#access']=FALSE;
+    $form[$field]['format']['guidelines']['#access']=FALSE;
+  }
+  //$form['defintion']['und'][0]['format']['#access'] = FALSE;
+  return $form;
+}
+
+
 function chado_onto_term_submit_validate($node, $form, &$form_state) {
-drupal_set_message("I amhere chado_onto_term_submit_validate", 'warning');
   // We only want to validate when the node is saved.
   // Since this validate can be called on AJAX and Deletion of the node
   // we need to make this check to ensure queries are not executed
@@ -476,7 +527,6 @@ drupal_set_message("I amhere chado_onto_term_submit_validate", 'warning');
  * @ingroup tripal_onto_term_submit
  */
 function chado_onto_term_submit_insert($node) {
-drupal_set_message("I amhere chado_onto_term_submit_insert", 'warning');
   $onto_term_submit_id = '';
 
   // if there is an onto_term_submit_id in the $node object then this must be a sync so
@@ -502,15 +552,15 @@ drupal_set_message("I amhere chado_onto_term_submit_insert", 'warning');
       'type_id' => $node->onto_term_submit_type,
       'definition_ref' => $node->definition_ref['value'],
       'term_xref' => $node->term_xref['value'],
-      'seealso_url' => $node->seealso_url['value'],
-      'contact_name' => $node->contact_name['value'],
-      'contact_email' => $node->contact_email['value'],
+      'seealso_url' => $node->seealso_url,
+      'contact_name' => $node->contact_name,
+      'contact_email' => $node->contact_email,
       'comments' => $node->comments['value'],
+      'status' => $node->status,
+      'status_notes' => $node->status_notes['value'],
     );
-dpm($node,'node');
 dpm($values,'values');
     $onto_term_submit = chado_insert_record('onto_term_submit', $values);
-dpm($onto_term_submit,'onto_term_submit');
     if (!$onto_term_submit) {
       drupal_set_message(t('Unable to add onto_term_submit.'), 'warning');
       tripal_report_error('tripal_onto_term_submit', TRIPAL_WARNING, 'Insert onto_term_submit: Unable to create onto_term_submit where values: %values',
@@ -536,11 +586,7 @@ dpm($onto_term_submit,'onto_term_submit');
         // the value of the onto_term_submit_id key
         'foreignkey_value' => $onto_term_submit_id
       );
-drupal_set_message('before chado_update_node_form_properties','warnings');
-dpm($node,'node before chado_update_node_form_properties');
-dpm($details,'details before chado_update_node_form_properties');
       chado_update_node_form_properties($node, $details);
-drupal_set_message('after chado_update_node_form_properties','warnings');
 /*
       // If you implemented the dbxrefs form in chado_onto_term_submit_form then you need
       // to handle inserting these database references into your Chado _dbxref
@@ -583,7 +629,6 @@ drupal_set_message('after chado_update_node_form_properties','warnings');
     $record->vid = $node->vid;
     $record->onto_term_submit_id = $onto_term_submit_id;
     drupal_write_record('chado_onto_term_submit', $record);
-dpm($record,'drupal_write_record(chado_onto_term_submit, $record)');
   }
 }
 
@@ -597,7 +642,6 @@ dpm($record,'drupal_write_record(chado_onto_term_submit, $record)');
  * @ingroup tripal_onto_term_submit
  */
 function chado_onto_term_submit_update($node) {
-drupal_set_message("I amhere chado_onto_term_submit_update", 'warning');
   // be sure to always trim text fields
   $node->term_name   = trim($node->term_name);
   $node->definition  = trim($node->definition['value']);
@@ -610,9 +654,9 @@ drupal_set_message("I amhere chado_onto_term_submit_update", 'warning');
     'term_name' => $node->term_name,
   );
   $options = array('return_record' => TRUE);
-  $status = chado_update_record('onto_term_submit', $match, $values, $options);
+  $update_status = chado_update_record('onto_term_submit', $match, $values, $options);
 
-  if (!$status) {
+  if (!$update_status) {
     drupal_set_message(t('Unable to update onto_term_submit.'), 'warning');
     tripal_report_error('tripal_onto_term_submit', TRIPAL_WARNING, 'Update onto_term_submit: Unable to update onto_term_submit where values: %values',
       array('%values' => print_r($values, TRUE)));
@@ -698,7 +742,6 @@ function chado_onto_term_submit_delete($node) {
  * @ingroup tripal_onto_term_submit
  */
 function chado_onto_term_submit_load($nodes) {
-drupal_set_message("I amhere chado_onto_term_submit_load", 'warning');
   // EXPLANATION: when displaying or node or accessing the node in a template
   // we need the data from Chado. This function finds the record in Chado that
   // this node belongs to and adds the record.
@@ -735,6 +778,8 @@ drupal_set_message("I amhere chado_onto_term_submit_load", 'warning');
     $onto_term_submit = chado_expand_var($onto_term_submit, 'field', 'onto_term_submit.contact_name');
     $onto_term_submit = chado_expand_var($onto_term_submit, 'field', 'onto_term_submit.contact_email');
     $onto_term_submit = chado_expand_var($onto_term_submit, 'field', 'onto_term_submit.comments');
+    $onto_term_submit = chado_expand_var($onto_term_submit, 'field', 'onto_term_submit.status_notes');
+    $onto_term_submit = chado_expand_var($onto_term_submit, 'table', 'onto_term_submitprop');
 
     // add the new onto_term_submit object to this node.
     $nodes[$nid]->onto_term_submit = $onto_term_submit;
@@ -755,7 +800,6 @@ drupal_set_message("I amhere chado_onto_term_submit_load", 'warning');
  * @ingroup tripal_onto_term_submit
  */
 function tripal_onto_term_submit_node_presave($node) {
-drupal_set_message("I amhere chado_onto_term_submit_presave", 'warning');
   // EXPLANATION: This node is useful for making changes to the node prior to it
   // being saved to the database.
   // One useful case for this is to set the title of a node using values
@@ -777,12 +821,14 @@ drupal_set_message("I amhere chado_onto_term_submit_presave", 'warning');
     case 'chado_onto_term_submit':
       // for a form submission the 'uniquename' field will be set,
       // for a sync, we must pull from the onto_term_submit object
+dpm($node,'node');
       if (property_exists($node, 'term_name')) {
         // set the title
-        $node->title = "1Term Submission:" . $node->term_name . ' by '.  $node->contact_name['value'];
-      }
+         $library_term = tripal_get_cvterm(array('cvterm_id' => $node->onto_term_submit_id));
+        $node->title = "Term Submission " . $node->created . ": " . $node->term_name  . ' by '.  $node->contact_name ;
+     }
       else if (property_exists($node, 'onto_term_submit')) {
-        $node->title = "2Term Submission:".$node->onto_term_submit->term_name ." by ". $node->onto_term_submit->contact_name['value'];
+        $node->title = "Term Submission " . $node->created . " : " . $node->onto_term_submit->term_name  ." by ". $node->onto_term_submit->contact_name;
       }
       break;
   }
@@ -796,7 +842,6 @@ drupal_set_message("I amhere chado_onto_term_submit_presave", 'warning');
  * @ingroup tripal_onto_term_submit
  */
 function tripal_onto_term_submit_node_insert($node) {
-drupal_set_message("I amhere tripal_onto_term_submit_node_insert", 'warning');
   // EXPLANATION: This function is used after any a node is inserted into the
   // database. It is different from the hook_insert() function above in that it
   // is called after any node is saved, regardless of it's type. This function
@@ -819,14 +864,9 @@ drupal_set_message("I amhere tripal_onto_term_submit_node_insert", 'warning');
 
       // find the onto_term_submit and add in the details
       $onto_term_submit_id = chado_get_id_from_nid('onto_term_submit', $node->nid);
-dpm($onto_term_submit_id,'onto_term_submit_id');
-dpm($node->nid,'$node->nid');
       // build the onto_term_submit variable by using the chado_generate_var() function
       $values = array('onto_term_submit_id' => $onto_term_submit_id);
-dpm($node,'node in tripal_onto_term_submit_node_insert');
-dpm($values,'values in tripal_onto_term_submit_node_insert');
       $onto_term_submit = chado_generate_var('onto_term_submit', $values);
-dpm($onto_term_submit,'onto_term_submit in tripal_onto_term_submit_node_insert');
       $node->onto_term_submit = $onto_term_submit;
 
 
@@ -844,14 +884,8 @@ dpm($onto_term_submit,'onto_term_submit in tripal_onto_term_submit_node_insert')
       // chado_onto_term_submit_chdo_node_default_url().
 
       // Set the Title and URL for this node.
-drupal_set_message("I amhere tripal_onto_term_submit_node_insert before set title", 'warning');
       $onto_term_submit->title = chado_get_node_title($node);
-dpm($onto_term_submit->title,'chado_get_node_title($node)');
-drupal_set_message("I amhere tripal_onto_term_submit_node_insert after set title", 'warning');
-dpm( $onto_term_submit->title,' $onto_term_submit->title');
       chado_set_node_url($node);
-drupal_set_message("I amhere tripal_onto_term_submit_node_insert after set url", 'warning');
-dpm($node,'tripal_onto_term_submit_node_insert after set url');
       break;
   }
 }
@@ -863,7 +897,6 @@ dpm($node,'tripal_onto_term_submit_node_insert after set url');
  *
  */
 function tripal_onto_term_submit_node_update($node) {
-drupal_set_message("I amhere tripal_onto_term_submit_node_update", 'warning');
   // EXPLANATION: This function is used after any a node is updated in the
   // database. It is different from the hook_update() function above in that it
   // is called after any node is updated, regardless of it's type.
@@ -901,7 +934,6 @@ drupal_set_message("I amhere tripal_onto_term_submit_node_update", 'warning');
  * @ingroup tripal_onto_term_submit
  */
 function tripal_onto_term_submit_node_view($node, $view_mode, $langcode) {
-drupal_set_message("I amhere tripal_onto_term_submit_node_view", 'warning');
   // EXPLANATION: This function defines the content "blocks" that appear when
   // the node is displayed. It is node type agnostic so we can add content to
   // any node type. So, we use this function to add the content from all of our
@@ -1002,7 +1034,6 @@ drupal_set_message("I amhere tripal_onto_term_submit_node_view", 'warning');
  */
 function chado_onto_term_submit_chado_node_default_title_format() {
   //return '[onto_term_submit.uniquename] ([onto_term_submit.type_id>cvterm.name]) [onto_term_submit.organism_id>organism.genus] [onto_term_submit.organism_id>organism.species]';
-drupal_set_message("I amhere chado_onto_term_submit_chado_node_default_title_format", 'warning');
   return '[onto_term_submit.term_name] ([onto_term_submit.type_id>cv.name]) by [onto_term_submit.contact_name]';
 }
 
@@ -1012,9 +1043,8 @@ drupal_set_message("I amhere chado_onto_term_submit_chado_node_default_title_for
  * Designates a default URL format for onto_term_submit nodes.
  */
 function chado_onto_term_submit_chado_node_default_url_format() {
-  //return '/onto_term_submit/[onto_term_submit.organism_id>organism.genus]/[onto_term_submit.organism_id>organism.species]/[onto_term_submit.type_id>cvterm.name]/[onto_term_submit.uniquename]';
-drupal_set_message("I amhere chado_onto_term_submit_chado_node_default_url_format", 'warning');
-  return '/onto_term_submit/[onto_term_submit.type_id>cv.name]/[onto_term_submit.term_name]';
+//  return '/onto_term_submit/[onto_term_submit.type_id>cv.name]/[onto_term_submit.term_name]';
+  return '/onto_term_submit/[onto_term_submit.onto_term_submit_id]/[onto_term_submit.type_id>cv.name]/[onto_term_submit.term_name]';
 }
 
 
@@ -1022,7 +1052,6 @@ drupal_set_message("I amhere chado_onto_term_submit_chado_node_default_url_forma
 
 
 function tripal_onto_term_submit_add_node_form_properties(&$form, &$form_state, $details) {
-drupal_set_message("tripal_onto_term_submit_add_node_form_properties", 'warning');
   // Set defaults for optional fields
   if (!array_key_exists('fieldset_title', $details)) {
     $details['fieldset_title'] = 'Properties';
@@ -1062,7 +1091,6 @@ drupal_set_message("tripal_onto_term_submit_add_node_form_properties", 'warning'
   else {
     $details['nodetype'] = str_replace('_id', '', $details['chado_id_field']);
   }
-dpm($details,'prp details');
 
   // make sure the specified cv exists
   if (isset($details['cv_name'])) {
@@ -1204,7 +1232,6 @@ dpm($details,'prp details');
     array('return_html' => TRUE)
     );
   }
-  dpm($property_options,'prop_options');
   // Group all of the chado node api fieldsets into vertical tabs.
   $form['chado_node_api'] = array(
     '#type' => 'vertical_tabs',
@@ -1216,16 +1243,15 @@ dpm($details,'prp details');
   );
 
   // the fieldset of the property elements
-  $instructions = 'To add properties of the current %nodetype, select the type of 
-      information from the drop-down below and enter the information in the text box before 
+  $instructions = 'To add relationships to the new term, select the relationship type 
+     from the first drop-down below and then select the relation from the second drop-down before 
       clicking "Add". To remove incorrect information, click the "Remove" button. 
       Note: you cannot edit previously added information but instead need to 
-      remove and re-add it.';
+      remove and re-add it. If you would like to use a relationship or relation term that is not listed, add them to the Comments field above.';
   $form['properties'] = array(
     '#type' => 'fieldset',
     '#title' => t($details['fieldset_title']),
-    '#description' => t('<p><strong>Additional information about a 
-      %nodetype.</strong></p><p>' . $instructions . $details['additional_instructions'] . '</p>', array('%nodetype' => $details['nodetype'])),
+    '#description' => t('<p><strong>Add Relationsips</strong></p><p>' . $instructions . $details['additional_instructions'] . '</p>', array('%nodetype' => $details['nodetype'])),
     '#collapsible' => TRUE,
     '#collapsed' => TRUE,
     '#group' => 'chado_node_api',
@@ -1269,7 +1295,6 @@ dpm($details,'prp details');
     '#value' => serialize($details)
   );
 
-  dpm($form,'form');
   /* Properties can come to us in two ways:
    * 1) As entries in the $details['default_properties'] option
    *
@@ -1283,8 +1308,6 @@ dpm($details,'prp details');
    */
   if (isset($form_state['chado_properties'])) {
     $existing_properties = $form_state['chado_properties'];
-dpm($existing_properties,'if existing_properties');
-dpm($form_state,'if formstate');
   }
   else {
 
@@ -1310,7 +1333,7 @@ dpm($form_state,'if formstate');
          CVT.definition,
          CVT2.name as parent_name,
          CVT2.definition as parent_definition,
-         PP.value as parent_type_id,
+         PP.value ,
          PP.rank
        FROM {" . $details['property_table'] . "} PP
          INNER JOIN {cvterm} CVT ON CVT.cvterm_id = PP.type_id
@@ -1319,7 +1342,6 @@ dpm($form_state,'if formstate');
          PP." . $details['chado_id_field'] . " = :chado_id 
        ORDER BY CVT.name, PP.rank", $sql_args)->fetchAll();
 
-dpm($existing_properties,'else existing_properties');
     // next add in any default properties
     if (array_key_exists('default_properties', $details)) {
 
@@ -1441,7 +1463,6 @@ dpm($existing_properties,'else existing_properties');
       $property->parent_definition = $new_term->definition;
       $property->parent_name = $new_term->name;
     }
-dpm($property,'property');
 
       if (isset($property->parent_definition)) {
         $form['properties']['property_table'][$property->type_id][$property->property_id]['value']['#markup'] = $property->parent_name . '<br><i>' . $property->parent_definition . '</i>';
@@ -1533,7 +1554,7 @@ dpm($property,'property');
   $form['properties']['property_table']['new']['value'] = array(
     '#type' => 'select',
     '#options' => $details['value_options'],
-    '#prefix' => '<span id="tripal-generic-edit-properties-new-desc">',
+    '#prefix' => '<span id="tripal-generic-edit-properties-new-parent-desc">',
     '#suffix' => '<i>' . $parent_desc . '</i></span>',
     '#ajax' => array(
       'callback' => "chado_add_node_form_properties_ajax_desc",
@@ -1542,7 +1563,6 @@ dpm($property,'property');
       'method' => 'replace',
     ),
   );
-
   // add button
   $form['properties']['property_table']['new']['property_action'] = array(
     '#type' => 'submit',
