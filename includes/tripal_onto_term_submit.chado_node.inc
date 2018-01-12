@@ -536,7 +536,7 @@ function chado_onto_term_submit_insert($node) {
 
     // be sure to always trim text fields
     $node->term_name   = trim($node->term_name);
-    $node->description  = trim($node->description['value']);
+    //$node->description  = property_exists('description', $node) : trim($node->description['value']) ? '';
 
     // get the onto_term_submit type record
     $type_cv = tripal_get_default_cv('onto_term_submit', 'type_id');
@@ -778,7 +778,7 @@ function chado_onto_term_submit_load($nodes) {
     $onto_term_submit = chado_expand_var($onto_term_submit, 'field', 'onto_term_submit.contact_email');
     $onto_term_submit = chado_expand_var($onto_term_submit, 'field', 'onto_term_submit.comments');
     $onto_term_submit = chado_expand_var($onto_term_submit, 'field', 'onto_term_submit.status_notes');
-    $onto_term_submit = chado_expand_var($onto_term_submit, 'table', 'onto_term_submitprop');
+    $onto_term_submit = chado_expand_var($onto_term_submit, 'table', 'onto_term_submitprop', array('return_array' => TRUE));
 
     // add the new onto_term_submit object to this node.
     $nodes[$nid]->onto_term_submit = $onto_term_submit;
@@ -822,7 +822,7 @@ function tripal_onto_term_submit_node_presave($node) {
       // for a sync, we must pull from the onto_term_submit object
       if (property_exists($node, 'term_name')) {
         // set the title
-         $library_term = tripal_get_cvterm(array('cvterm_id' => $node->onto_term_submit_id));
+        //$library_term = tripal_get_cvterm(array('cvterm_id' => $node->onto_term_submit_id));
         $node->title = "Term Submission " . $node->created . ": " . $node->term_name  . ' by '.  $node->contact_name ;
      }
       else if (property_exists($node, 'onto_term_submit')) {

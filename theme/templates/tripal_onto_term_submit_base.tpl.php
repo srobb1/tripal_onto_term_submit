@@ -1,6 +1,5 @@
 <?php
 $onto_term_submit  = $variables['node']->onto_term_submit;
-dpm($onto_term_submit,'onto_term_submit');
 ?>
 <div class="tripal_onto_term_submit-data-block-desc tripal-data-block-desc"></div> <?php
 // the $headers array is an array of fields to use as the column headers.

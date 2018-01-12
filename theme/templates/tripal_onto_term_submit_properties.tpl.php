@@ -8,7 +8,7 @@ $options = array(
 );
 $onto_term_submit = chado_expand_var($onto_term_submit,'table', 'onto_term_submitprop', $options);
 $onto_term_submitprops = $onto_term_submit->onto_term_submitprop;
-$properties = array();
+$properties = $node->onto_term_submit->onto_term_submitprop;
 
 if (count($properties)) { ?>
   <div class="tripal_onto_term_submit-data-block-desc tripal-data-block-desc">Additional details for this onto_term_submit include:</div> <?php
@@ -31,12 +31,12 @@ if (count($properties)) { ?>
     // we see one, save it in an array for later and don't add it yet to the
     // table yet.
     if ($property->type_id->name == 'Keywords') {
-      $keywords[] = $property->value;
+      $keywords[] = $property->value->name;
       continue;
     }
     $rows[] = array(
       $property->type_id->name,
-      $property->value
+      $property->value->name,
     );
   }
   // now add in a single row for all keywords
