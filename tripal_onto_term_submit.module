@@ -289,15 +289,15 @@ function tripal_onto_term_submit_theme($existing, $type, $theme, $path) {
     // the same way as above. However, the naming of the template is changed to
     // include the name of the module that supplies the node type followed by
     // our record name:
-
+/*
     // tripal_organism templates
     'tripal_organism_onto_term_submits' => array(
       'variables' => array('node' => NULL),
       'template' => 'tripal_organism_onto_term_submits',
       'path' => "$path/theme/templates",
     ),
+*/
   );
-
   return $items;
 }
 

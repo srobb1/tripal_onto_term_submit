@@ -1507,7 +1507,7 @@ function tripal_onto_term_submit_add_node_form_properties(&$form, &$form_state, 
         // from the node form validate and Drupal required errors for non-property fields
         // preventing the user from removing properties we set the #limit_validation_errors below
         '#validate' => array('chado_add_node_form_subtables_remove_button_validate'),
-        '#submit' => array('chado_add_node_form_subtables_remove_button_submit'),
+        '#submit' => array('tripal_onto_term_submit_add_node_form_subtables_remove_button_submit'),
         // Limit the validation of the form upon clicking this button to the property_table tree
         // No other fields will be validated (ie: no fields from the main form or any other api
         // added form).
@@ -1565,9 +1565,6 @@ function tripal_onto_term_submit_add_node_form_properties(&$form, &$form_state, 
   );
 
 
-function chado_add_node_form_properties_ajax_parent_desc($form, $form_state) {
-  return $form['properties']['property_table']['new']['value'];
-}
 
   $form['properties']['property_table']['new']['value'] = array(
     '#type' => 'select',
@@ -1601,7 +1598,7 @@ function chado_add_node_form_properties_ajax_parent_desc($form, $form_state) {
     // required errors for non-property fields preventing the user from adding properties we
     // set the #limit_validation_errors below
     '#validate' => array('chado_add_node_form_subtables_add_button_validate'),
-    '#submit' => array('chado_add_node_form_subtables_add_button_submit'),
+    '#submit' => array('tripal_onto_term_submit_add_node_form_subtables_add_button_submit'),
     // Limit the validation of the form upon clicking this button to the property_table tree
     // No other fields will be validated (ie: no fields from the main form or any other api
     // added form).
@@ -1617,3 +1614,126 @@ $tripal_message = "some message";
 }
 
 
+function chado_add_node_form_properties_ajax_parent_desc($form, $form_state) {
+  return $form['properties']['property_table']['new']['value'];
+}
+
+
+function tripal_onto_term_submit_add_node_form_subtables_add_button_submit($form, &$form_state) {
+
+  // Based on triggering element call the correct submit function
+  // ASUMPTION #1: each of the buttons must have properties, dbxrefs or relationships
+  // as the first part of the #name to uniquely identify the subsection.
+  if (preg_match('/^([a-z]+).*/', $form_state['triggering_element']['#name'], $matches)) {
+    $subsection = $matches[1];
+
+    switch ($subsection) {
+      case 'properties':
+        tripal_onto_term_submit_add_node_form_properties_add_button_submit($form, $form_state);
+        break;
+      case 'dbxrefs':
+        chado_add_node_form_dbxrefs_add_button_submit($form, $form_state);
+        break;
+      case 'relationships':
+        chado_add_node_form_relationships_add_button_submit($form, $form_state);
+        break;
+    }
+  }
+
+  // This is needed to ensure the form builder function is called for the node
+  // form in order for any of these changes to be seen.
+  $form_state['rebuild'] = TRUE;
+}
+
+function tripal_onto_term_submit_add_node_form_properties_add_button_submit($form, &$form_state) {
+
+  $details = unserialize($form_state['values']['property_table']['details']);
+
+  // if the chado_additional_properties array is not set then this is the first time modifying the
+  // property table. this means we need to include all the properties from the db
+  if (!isset($form_state['chado_properties'])) {
+    tripal_onto_term_submit_add_node_form_properties_create_property_formstate_array($form, $form_state);
+  }
+
+  // get details for the new property
+  $property = array(
+    'type_id' => $form_state['values']['property_table']['new']['type'],
+    'type_name' => $form_state['values']['property_table']['new']['type_name'],
+    'definition' => $form_state['values']['property_table']['new']['definition'],
+    'property_id' => 'TEMP' . uniqid(),
+    'value' => $form_state['values']['property_table']['new']['value'],
+    'rank' => 'TEMP' . uniqid(),
+  );
+
+  $key = $property['type_id'] . '-' . $property['property_id'];
+  $form_state['chado_properties'][$key] = (object) $property;
+
+  // we don't want the new element to pick up the values from the previous element so wipe them out
+  unset($form_state['input']['property_table']['new']['type']);
+  unset($form_state['input']['property_table']['new']['type_name']);
+  unset($form_state['input']['property_table']['new']['definition']);
+  unset($form_state['input']['property_table']['new']['value']);
+
+}
+function tripal_onto_term_submit_add_node_form_properties_create_property_formstate_array($form, &$form_state) {
+
+  $form_state['chado_properties'] = array();
+
+  foreach (element_children($form['properties']['property_table']) as $type_id) {
+    if ($type_id != 'new') {
+      foreach (element_children($form['properties']['property_table'][$type_id]) as $property_id) {
+        $element = $form['properties']['property_table'][$type_id][$property_id];
+        $property = array(
+          'type_id' => $element['prop_type_id']['#value'],
+          'type_name' => $element['type']['#markup'],
+          'property_id' => $element['property_id']['#value'],
+          'value' => $element['value']['#value'],
+          'rank' => $element['rank']['#markup']
+        );
+        $key = $property['type_id'] . '-' . $property['property_id'];
+        $form_state['chado_properties'][$key] = (object) $property;
+      }
+    }
+  }
+}
+function tripal_onto_term_submit_add_node_form_subtables_remove_button_submit($form, &$form_state) {
+
+  // Based on triggering element call the correct submit function
+  // ASUMPTION #1: each of the buttons must have properties, dbxrefs or relationships
+  // as the first part of the #name to uniquely identify the subsection.
+  if (preg_match('/^([a-z]+).*/', $form_state['triggering_element']['#name'], $matches)) {
+    $subsection = $matches[1];
+
+    switch ($subsection) {
+      case 'properties':
+        tripal_onto_term_submit_add_node_form_properties_remove_button_submit($form, $form_state);
+        break;
+      case 'dbxrefs':
+        chado_add_node_form_dbxrefs_remove_button_submit($form, $form_state);
+        break;
+      case 'relationships':
+        chado_add_node_form_relationships_remove_button_submit($form, $form_state);
+        break;
+    }
+  }
+
+  // This is needed to ensure the form builder function is called for the node
+  // form in order for any of these changes to be seen.
+  $form_state['rebuild'] = TRUE;
+}
+function tripal_onto_term_submit_add_node_form_properties_remove_button_submit(&$form, &$form_state) {
+
+  // if the chado_properties array is not set then this is the first time modifying the
+  // property table. this means we need to include all the properties from the db
+  if (!isset($form_state['chado_properties'])) {
+    tripal_onto_term_submit_add_node_form_properties_create_property_formstate_array($form, $form_state);
+  }
+
+  // remove the specified property from the form property table
+  if (preg_match('/properties_remove-([^-]+-[^-]+)/', $form_state['triggering_element']['#name'], $match)) {
+    $key = $match[1];
+    if (array_key_exists($key, $form_state['chado_properties'])) {
+      unset($form_state['chado_properties'][$key]);
+    }
+  }
+}
