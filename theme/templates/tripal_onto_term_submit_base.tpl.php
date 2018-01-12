@@ -100,7 +100,7 @@ $rows[] = array(
     'data' => 'Status Notes',
     'header' => TRUE
   ),
-  $onto_term_submit->status->notes
+  $onto_term_submit->status_notes
 );
 
 // allow site admins to see the onto_term_submit ID
@@ -137,4 +137,3 @@ $table = array(
 // once we have our table array structure defined, we call Drupal's
 // theme_table() function to generate the table.
 print theme_table($table); ?>
-<div style="text-align: justify"><?php print $onto_term_submit->description ?></div>

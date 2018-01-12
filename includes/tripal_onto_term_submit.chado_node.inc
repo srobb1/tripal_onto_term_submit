@@ -129,7 +129,7 @@ function chado_onto_term_submit_form($node, &$form_state) {
   global $user;
   $form = array();
   $admin_rid = user_role_load_by_name('administrator')->rid; // admin want to also add ontology_curator
-  $onto_curator_rid = user_role_load_by_name('ontology_curator')->rid; // admin want to also add ontology_curator
+ // $onto_curator_rid = user_role_load_by_name('ontology_curator')->rid; // admin want to also add ontology_curator
 
 
   // Default values can come in the following ways:
@@ -559,7 +559,6 @@ function chado_onto_term_submit_insert($node) {
       'status' => $node->status,
       'status_notes' => $node->status_notes['value'],
     );
-dpm($values,'values');
     $onto_term_submit = chado_insert_record('onto_term_submit', $values);
     if (!$onto_term_submit) {
       drupal_set_message(t('Unable to add onto_term_submit.'), 'warning');
@@ -645,7 +644,7 @@ function chado_onto_term_submit_update($node) {
   // be sure to always trim text fields
   $node->term_name   = trim($node->term_name);
   $node->definition  = trim($node->definition['value']);
-
+  $onto_term_submit_id = chado_get_id_from_nid('onto_term_submit', $node->nid) ;
   // use the chado_update_record() function to update the record
   $match = array(
     'onto_term_submit_id' => $onto_term_submit_id,
@@ -821,7 +820,6 @@ function tripal_onto_term_submit_node_presave($node) {
     case 'chado_onto_term_submit':
       // for a form submission the 'uniquename' field will be set,
       // for a sync, we must pull from the onto_term_submit object
-dpm($node,'node');
       if (property_exists($node, 'term_name')) {
         // set the title
          $library_term = tripal_get_cvterm(array('cvterm_id' => $node->onto_term_submit_id));
@@ -1123,7 +1121,6 @@ function tripal_onto_term_submit_add_node_form_properties(&$form, &$form_state, 
   }
  elseif( array_key_exists('select_options', $details)) {
    // check the contents in next block
- drupal_set_message('select_options are a go!!','warning');
  }
   
   
@@ -1220,17 +1217,17 @@ function tripal_onto_term_submit_add_node_form_properties(&$form, &$form_state, 
     );
   }
   else {
-    $tripal_message = tripal_set_message(
-    t('To add additional properties to the drop down list, you need to <a href="@cvtermlink">add
-        a controlled vocabulary term</a> to the %cv_name controlled vocabulary.', 
-    array(
-      '%cv_name' => $details['cv_name'],
-      '@cvtermlink' => url('admin/tripal/chado/tripal_cv/cv/' . $details['cv_id'] . '/cvterm/add')
-    )
-    ), 
-    TRIPAL_INFO, 
-    array('return_html' => TRUE)
-    );
+//    $tripal_message = tripal_set_message(
+//    t('To add additional properties to the drop down list, you need to <a href="@cvtermlink">add
+//        a controlled vocabulary term</a> to the %cv_name controlled vocabulary.', 
+//    array(
+//      '%cv_name' => $details['cv_name'],
+//      '@cvtermlink' => url('admin/tripal/chado/tripal_cv/cv/' . $details['cv_id'] . '/cvterm/add')
+//    )
+//    ), 
+//    TRIPAL_INFO, 
+//    array('return_html' => TRUE)
+ //   );
   }
   // Group all of the chado node api fieldsets into vertical tabs.
   $form['chado_node_api'] = array(
@@ -1347,18 +1344,17 @@ function tripal_onto_term_submit_add_node_form_properties(&$form, &$form_state, 
 
       // next iterate through each of the default properties and create a new
       // stdClass array that contains the fields needed.
-/*not using default properites
       foreach ($details['default_properties'] as $property) {
         $new_prop = new stdClass();
         $new_prop->type_id = $property['cvterm']->cvterm_id;
         $new_prop->type_name = $property['cvterm']->name;
         $new_prop->definition = $property['cvterm']->definition;
+        //$new_prop->parent_definition = $property['cvterm']->definition;
         $new_prop->value = $property['value'];
         $new_prop->property_id = 'TEMP' . uniqid();
         $new_prop->rank = 'TEMP' . uniqid();
         $existing_properties[] = $new_prop;
       }
-*/
     }
   }
   /* The format of the $existing_properties array is either:
@@ -1449,14 +1445,23 @@ function tripal_onto_term_submit_add_node_form_properties(&$form, &$form_state, 
       // to make it easier for users to determine what an added property means.
       if (isset($property->definition)) {
         $form['properties']['property_table'][$property->type_id][$property->property_id]['type']['#markup'] = $property->type_name . '<br><i>' . $property->definition . '</i>';
-      }
+      }else{
+        $new_term = tripal_get_cvterm(array('cvterm_id' => $property->type_id));
+        if ($new_term) {
+      //     $property->definition = $new_term->definition;
+            if (isset($new_term->definition)) {
+                $form['properties']['property_table'][$property->type_id][$property->property_id]['type']['#markup'] = $new_term->name . '<br><i>' . $new_term->definition . '</i>';
+         }
 
+      }
+     }
 
 
       $form['properties']['property_table'][$property->type_id][$property->property_id]['value'] = array(
         '#type' => 'markup',
         '#markup' => $property->value ,
-        '#prefix' => '<span class="row-unsaved-warning"></span>'
+        '#value' => $property->value ,
+        '#prefix' => '<span class="row-unsaved-warning"></span>',
       );
     $new_term = tripal_get_cvterm(array('cvterm_id' => $property->value));
     if ($new_term) {
@@ -1466,9 +1471,17 @@ function tripal_onto_term_submit_add_node_form_properties(&$form, &$form_state, 
 
       if (isset($property->parent_definition)) {
         $form['properties']['property_table'][$property->type_id][$property->property_id]['value']['#markup'] = $property->parent_name . '<br><i>' . $property->parent_definition . '</i>';
-      }
+      }else{
+         $new_term = tripal_get_cvterm(array('cvterm_id' => $property->value));
+          if ($new_term) {
+            $property->parent_definition = $new_term->definition;
+            $property->parent_name = $new_term->name;
+          }
+         if (isset($new_term->definition)) {
+        $form['properties']['property_table'][$property->type_id][$property->property_id]['value']['#markup'] = $new_term->name . '<br><i>' . $new_term->definition . '</i>';
+     }
 
-
+}
 
       $form['properties']['property_table'][$property->type_id][$property->property_id]['rank'] = array(
         '#type' => 'markup',
@@ -1551,14 +1564,19 @@ function tripal_onto_term_submit_add_node_form_properties(&$form, &$form_state, 
     ),
   );
 
+
+function chado_add_node_form_properties_ajax_parent_desc($form, $form_state) {
+  return $form['properties']['property_table']['new']['value'];
+}
+
   $form['properties']['property_table']['new']['value'] = array(
     '#type' => 'select',
     '#options' => $details['value_options'],
     '#prefix' => '<span id="tripal-generic-edit-properties-new-parent-desc">',
     '#suffix' => '<i>' . $parent_desc . '</i></span>',
     '#ajax' => array(
-      'callback' => "chado_add_node_form_properties_ajax_desc",
-      'wrapper' => 'tripal-generic-edit-properties-new-desc',
+      'callback' => "chado_add_node_form_properties_ajax_parent_desc",
+      'wrapper' => 'tripal-generic-edit-properties-new-parent-desc',
       'effect' => 'fade',
       'method' => 'replace',
     ),
@@ -1591,7 +1609,7 @@ function tripal_onto_term_submit_add_node_form_properties(&$form, &$form_state, 
       array('property_table') // Validate all fields within $form_state['values']['property_table']
     )
   );
-
+$tripal_message = "some message";
   $form['properties']['admin_message'] = array(
     '#type' => 'markup',
     '#markup' => $tripal_message
