@@ -11,7 +11,7 @@ $onto_term_submitprops = $onto_term_submit->onto_term_submitprop;
 $properties = $node->onto_term_submit->onto_term_submitprop;
 
 if (count($properties)) { ?>
-  <div class="tripal_onto_term_submit-data-block-desc tripal-data-block-desc">Additional details for this onto_term_submit include:</div> <?php
+  <div class="tripal_onto_term_submit-data-block-desc tripal-data-block-desc">Below are the terms that are related to <?php print $onto_term_submit->term_name ?> :</div> <?php
 
   // the $headers array is an array of fields to use as the column headers.
   // additional documentation can be found here
@@ -35,8 +35,9 @@ if (count($properties)) { ?>
       continue;
     }
     $rows[] = array(
-      $property->type_id->name,
-      $property->value->name,
+      '<u>' . $property->type_id->name .'</u><br><i>' . $property->type_id->definition . '</i>',
+      '<u>' .$property->value->name   .'</u><br><i>' . $property->value->definition . '</i>',
+//      $property->name . '<br><i>' . $property->definition . '</i>'
     );
   }
   // now add in a single row for all keywords

@@ -1446,11 +1446,11 @@ function tripal_onto_term_submit_add_node_form_properties(&$form, &$form_state, 
       if (isset($property->definition)) {
         $form['properties']['property_table'][$property->type_id][$property->property_id]['type']['#markup'] = $property->type_name . '<br><i>' . $property->definition . '</i>';
       }else{
-        $new_term = tripal_get_cvterm(array('cvterm_id' => $property->type_id));
+        $new_term = tripal_onto_term_submit_get_cvterm($property->type_id);
         if ($new_term) {
       //     $property->definition = $new_term->definition;
-            if (isset($new_term->definition)) {
-                $form['properties']['property_table'][$property->type_id][$property->property_id]['type']['#markup'] = $new_term->name . '<br><i>' . $new_term->definition . '</i>';
+            if (isset($new_term["definition"])) {
+                $form['properties']['property_table'][$property->type_id][$property->property_id]['type']['#markup'] = $new_term["name"] . '<br><i>' . $new_term["definition"] . '</i>';
          }
 
       }
@@ -1463,25 +1463,25 @@ function tripal_onto_term_submit_add_node_form_properties(&$form, &$form_state, 
         '#value' => $property->value ,
         '#prefix' => '<span class="row-unsaved-warning"></span>',
       );
-    $new_term = tripal_get_cvterm(array('cvterm_id' => $property->value));
+   
+    $new_term = tripal_onto_term_submit_get_cvterm($property->value);
     if ($new_term) {
-      $property->parent_definition = $new_term->definition;
-      $property->parent_name = $new_term->name;
+      $property->parent_definition = $new_term["definition"];
+      $property->parent_name = $new_term["name"];
     }
 
       if (isset($property->parent_definition)) {
         $form['properties']['property_table'][$property->type_id][$property->property_id]['value']['#markup'] = $property->parent_name . '<br><i>' . $property->parent_definition . '</i>';
-      }else{
-         $new_term = tripal_get_cvterm(array('cvterm_id' => $property->value));
-          if ($new_term) {
-            $property->parent_definition = $new_term->definition;
-            $property->parent_name = $new_term->name;
-          }
-         if (isset($new_term->definition)) {
-        $form['properties']['property_table'][$property->type_id][$property->property_id]['value']['#markup'] = $new_term->name . '<br><i>' . $new_term->definition . '</i>';
-     }
-
-}
+      }//else{
+       //  $new_term = tripal_get_cvterm(array('cvterm_id' => $property->value));
+       //   if ($new_term) {
+       //     $property->parent_definition = $new_term->definition;
+       //     $property->parent_name = $new_term->name;
+       //   }
+       //  if (isset($new_term->definition)) {
+       // $form['properties']['property_table'][$property->type_id][$property->property_id]['value']['#markup'] = $new_term->name . '<br><i>' . $new_term->definition . '</i>';
+       // }
+     //}
 
       $form['properties']['property_table'][$property->type_id][$property->property_id]['rank'] = array(
         '#type' => 'markup',
@@ -1538,17 +1538,17 @@ function tripal_onto_term_submit_add_node_form_properties(&$form, &$form_state, 
   $type_desc = '';
   if (isset($form_state['input']['property_table']['new']['type'])) {
     $new_type_id = $form_state['input']['property_table']['new']['type'];
-    $new_term = tripal_get_cvterm(array('cvterm_id' => $new_type_id));
+   $new_term = tripal_onto_term_submit_get_cvterm($new_type_id);
     if ($new_term) {
-      $type_desc = $new_term->definition;
+      $type_desc = $new_term["definition"];
     }
   }
   $parent_desc = '';
   if (isset($form_state['input']['property_table']['new']['value'])) {
     $new_type_id = $form_state['input']['property_table']['new']['value'];
-    $new_term = tripal_get_cvterm(array('cvterm_id' => $new_type_id));
+    $new_term = tripal_onto_term_submit_get_cvterm($new_type_id);
     if ($new_term) {
-      $parent_desc = $new_term->definition;
+      $parent_desc = $new_term["definition"];
     }
   }
   $form['properties']['property_table']['new']['type'] = array(
@@ -1735,5 +1735,22 @@ function tripal_onto_term_submit_add_node_form_properties_remove_button_submit(&
     if (array_key_exists($key, $form_state['chado_properties'])) {
       unset($form_state['chado_properties'][$key]);
     }
+  }
+}
+
+function tripal_onto_term_submit_get_cvterm($cvterm_id){
+  $sql = "select name, definition from {cvterm} cvt where cvterm_id = :cvterm_id";
+  $new_term=array();
+  $results = chado_query($sql,array(':cvterm_id'=>$cvterm_id));
+  $new_term['type_id']=$cvterm_id;
+  foreach($results as $rt){
+  $new_term['name']=$rt->name;
+  //$new_term['name']=$results[0]->name;
+  //$new_term['definition']=$results[0]->definition;
+  $new_term['definition']=$rt->definition;
+//dpm($new_term,$new_term['name']);
+  }
+  if (!empty($new_term)) {
+     return $new_term;
   }
 }
