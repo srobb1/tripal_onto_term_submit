@@ -69,7 +69,7 @@ $rows[] = array(
 // Type row
 $rows[] = array(
   array(
-    'data' => 'Definition Reference',
+    'data' => 'Comments',
     'header' => TRUE
   ),
   $onto_term_submit->comments
@@ -86,12 +86,16 @@ $rows[] = array(
 
 
 // Type row
+$statuses = array ('Term Requested','Term in Review', 'Term Added to Ontology', 'Contact Author for Additional Information', 'Term Submission Incomplete', 'Term Submission Issues');
+$status = $statuses[$onto_term_submit->status];
+dpm($onto_term_submit,'onto_term_submit-');
 $rows[] = array(
   array(
     'data' => 'Status',
     'header' => TRUE
   ),
-  $onto_term_submit->status 
+  $status
+//  $onto_term_submit->status
 );
 // Type row
 $rows[] = array(

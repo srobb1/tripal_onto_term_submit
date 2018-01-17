@@ -12,7 +12,6 @@
  * @ingroup tripal_onto_term_submit
  */
 function tripal_onto_term_submit_disable() {
-drupal_set_message("I amhere tripal_ontology_term_submissioi_disable", 'warning');
   // EXPLANATION: If you are using Drupal Views you want to ensure that any
   // default views that your module provides are disabled when the module is
   // disabled. Default views are specified in the
@@ -72,7 +71,6 @@ drupal_set_message("I amhere tripal_onto_term_submit_requirements phase instal",
  */
 function tripal_onto_term_submit_install() {
 
-drupal_set_message("I amhere tripal_ontology_term_submissiopn_install", 'warning');
   // EXPLANATION: Here is a good place to add any materialized views, controlled
   // vocabularies CV, databases or CV terms needed by your module.
   // To keep this module code short, create functions to do each of those tasks
@@ -277,8 +275,11 @@ function tripal_onto_term_submit_add_onto_term_submit_table() {
 drupal_set_message("I amhere tripal_onto_term_submit_add_onto_term_submit_table", 'warning');
   // EXPLANATION: use the Drupal Schema API to describe the custom table. Then
   // add the table using the chado_create_custom_table() function.
+
   $schema = array(
     'table' => 'onto_term_submit',
+    'name' => 'Chado Onto Term Submit',
+    'base_table' => '1',
     'fields' => array(
       'onto_term_submit_id' => array(
         'type' => 'serial',
@@ -357,9 +358,6 @@ drupal_set_message("I amhere tripal_onto_term_submit_add_onto_term_submit_table"
     // for the Tripal API to be able to expand tables in templates.
     'referring_tables' => array(
         0 => 'onto_term_submitprop',
-//      0 => 'onto_term_submit_relationship',
-//      1 => 'onto_term_submitprop',
-//      2 => 'onto_term_submit_dbxref',
     ),
   );
   chado_create_custom_table('onto_term_submit', $schema, TRUE);

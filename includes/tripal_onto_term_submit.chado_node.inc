@@ -314,8 +314,7 @@ if (isset($user->roles[$admin_rid]) or isset($user->roles[$onto_curator_rid])){
   $form['status'] = array(
     '#type' => t('select'),
     '#title' => t('Status'),
-    '#options' => array('Requested','Reviewing', 'Committed', 'Contacted Author', 'Incomplete', 'Issues', 'Done'),
-    //'#options' => array(0 => 'Requested',1 => 'Reviewing',2 => 'Committed',3 => 'Contacted Author',4 => 'Incomplete',5 => 'Issues',6 => 'Done'),
+    '#options' => array('Term Requested','Term in Review', 'Term Added to Ontology', 'Contact Author for Additional Information', 'Term Submission Incomplete', 'Term Submission Issues'),
     '#default_value' => $status,
     '#description' => t('Select the appropriate term to indicate the workflow progress.'),
 
@@ -369,7 +368,7 @@ if (isset($user->roles[$admin_rid]) or isset($user->roles[$onto_curator_rid])){
     'chado_id' => $onto_term_submit_id,
     'select_options' => $all_relations,
     'fieldset_title' => 'Add Relationships',
-    'additional_instructions' => 'Additional Instructions Here',
+    'additional_instructions' => '',
     'value_options' => $all_terms
  
     // the cv.cv_id of the cv governing onto_term_submitprop.type_id
@@ -976,7 +975,7 @@ function tripal_onto_term_submit_node_view($node, $view_mode, $langcode) {
           '#theme' => 'tripal_onto_term_submit_properties',
           '#node' => $node,
           '#tripal_toc_id'    => 'properties',
-          '#tripal_toc_title' => 'Properties',
+          '#tripal_toc_title' => 'Term Relationships',
         );
 /*
         $node->content['tripal_onto_term_submit_references'] = array(
@@ -1244,7 +1243,7 @@ function tripal_onto_term_submit_add_node_form_properties(&$form, &$form_state, 
      from the first drop-down below and then select the relation from the second drop-down before 
       clicking "Add". To remove incorrect information, click the "Remove" button. 
       Note: you cannot edit previously added information but instead need to 
-      remove and re-add it. If you would like to use a relationship or relation term that is not listed, add them to the Comments field above.';
+      remove and re-add it. If you would like to use a relationship or relation term that is not listed, add them to the Comments field above. ';
   $form['properties'] = array(
     '#type' => 'fieldset',
     '#title' => t($details['fieldset_title']),
@@ -1606,7 +1605,7 @@ function tripal_onto_term_submit_add_node_form_properties(&$form, &$form_state, 
       array('property_table') // Validate all fields within $form_state['values']['property_table']
     )
   );
-$tripal_message = "some message";
+$tripal_message = "You must click Add for the relationships to be attached to your submission";
   $form['properties']['admin_message'] = array(
     '#type' => 'markup',
     '#markup' => $tripal_message
@@ -1754,3 +1753,4 @@ function tripal_onto_term_submit_get_cvterm($cvterm_id){
      return $new_term;
   }
 }
+
