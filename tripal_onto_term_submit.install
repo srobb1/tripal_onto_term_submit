@@ -41,10 +41,8 @@ function tripal_onto_term_submit_disable() {
 function tripal_onto_term_submit_requirements($phase) {
 
 
-drupal_set_message("I amhere tripal_onto_term_submit_requirements", 'warning');
   $requirements = array();
   if ($phase == 'install') {
-drupal_set_message("I amhere tripal_onto_term_submit_requirements phase instal", 'warning');
     // EXPLANATION: It is essential that Chado be installed for almost all
     // Tripal modules. Therefore, the following code checks to ensure Chado is
     // installed and available. If your module does not require that Chado be
@@ -111,7 +109,6 @@ function tripal_onto_term_submit_install() {
  */
 function tripal_onto_term_submit_uninstall() {
 
-drupal_set_message("I amhere tripal_ontology_term_submissiopn_uninstall", 'warning');
 }
 
 /**
@@ -127,7 +124,6 @@ drupal_set_message("I amhere tripal_ontology_term_submissiopn_uninstall", 'warni
  * @ingroup tripal_onto_term_submit
  */
 function tripal_onto_term_submit_schema() {
-drupal_set_message("I am here tripal_onto_term_submit_schema", 'warning');
   // EXPLANATION: If your module creates a node type for data in the Chado
   // database then you probably need to link Drupal nodes with a respective ID
   // in the Chado table. The following is an onto_term_submit array for a table that will
@@ -248,7 +244,6 @@ function tripal_onto_term_submit_add_cvterms() {
  * @ingroup tripal_onto_term_submit
  */
 function tripal_onto_term_submit_add_custom_tables() {
-drupal_set_message("I amhere tripal_onto_term_submit_add_custom_tables", 'warning');
   // EXPLANATION: for this onto_term_submit module we will create a set of onto_term_submit tables
   // that mimic Chado tables. These tables are:
   //
@@ -272,7 +267,6 @@ drupal_set_message("I amhere tripal_onto_term_submit_add_custom_tables", 'warnin
  * @ingroup tripal_onto_term_submit
  */
 function tripal_onto_term_submit_add_onto_term_submit_table() {
-drupal_set_message("I amhere tripal_onto_term_submit_add_onto_term_submit_table", 'warning');
   // EXPLANATION: use the Drupal Schema API to describe the custom table. Then
   // add the table using the chado_create_custom_table() function.
 
@@ -320,7 +314,7 @@ drupal_set_message("I amhere tripal_onto_term_submit_add_onto_term_submit_table"
       'comments' => array(
         'type' => 'text',
       ),
-      'status' => array(
+      'sstatus' => array(
         'type' => 'int',
       ),
       'status_notes' => array(

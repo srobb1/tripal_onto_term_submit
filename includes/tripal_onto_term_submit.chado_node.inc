@@ -159,7 +159,7 @@ function chado_onto_term_submit_form($node, &$form_state) {
   $contact_name  = '';
   $contact_email = '';
   $comments = '';
-  $status = '';
+  $sstatus = '';
   $status_notes= '';
 
   // if we are editing an existing node then the 'onto_term_submit' record from Chado
@@ -176,7 +176,7 @@ function chado_onto_term_submit_form($node, &$form_state) {
   $contact_name  = $onto_term_submit->contact_name;
   $contact_email = $onto_term_submit->contact_email;
   $comments = $onto_term_submit->comments;
-  $status = $onto_term_submit->status;
+  $sstatus = $onto_term_submit->sstatus;
   $status_notes = $onto_term_submit->status_notes;
 
     // keep track of the onto_term_submit id
@@ -197,7 +197,7 @@ function chado_onto_term_submit_form($node, &$form_state) {
      $contact_name  = $form_state['values']['contact_name'];
      $contact_email  = $form_state['values']['contact_email'];
      $comments  = $form_state['values']['comments'];
-     $status  = $form_state['values']['status'];
+     $sstatus  = $form_state['values']['sstatus'];
      $status_notes  = $form_state['values']['status_notes'];
   }
   // if we are re building the form from after submission (from ajax call) then
@@ -212,7 +212,7 @@ function chado_onto_term_submit_form($node, &$form_state) {
      $contact_name  = $form_state['input']['contact_name'];
      $contact_email  = $form_state['input']['contact_email'];
      $comments  = $form_state['input']['comments'];
-     $status  = $form_state['input']['status'];
+     $sstatus  = $form_state['input']['sstatus'];
      $status_notes  = $form_state['input']['status_notes'];
   }
 
@@ -256,7 +256,6 @@ function chado_onto_term_submit_form($node, &$form_state) {
     '#required' => TRUE,
     '#default_value' => $definition_ref,
     '#description' => t('Where was this term first published? Enter a PMID or a Ontology ID, i.e, UBERON:0000955, for the term. If a PMID does not exist, enter a citation. More than one PMID, Ontology ID,  or citation can be included.'),
-    '#format' => 'plain_text'
   );
 
   $form['definition'] = array(
@@ -265,7 +264,6 @@ function chado_onto_term_submit_form($node, &$form_state) {
     '#required' => TRUE,
     '#default_value' => $definition,
     '#description' => t('Enter a definition for this term.'),
-    '#format' => 'plain_text'
 
   ); 
 
@@ -275,7 +273,6 @@ function chado_onto_term_submit_form($node, &$form_state) {
     '#required' => TRUE,
     '#default_value' => $definition_ref,
     '#description' => t('Where was this definition first published? Enter a PMID, Ontology ID, or citation for this term. More than one can be included.'),
-    '#format' => 'plain_text'
   ); 
 
   $form['seealso_url'] = array(
@@ -307,15 +304,14 @@ function chado_onto_term_submit_form($node, &$form_state) {
     '#title' => t('Any Comments'),
     '#default_value' => $comments,
     '#description' => t('Enter any comments about this term or submission. If a relationship (see below) term does not exist, add it here, denoted with a star(*). For example, NewTerm eats* brain. "NewTerm" is your new term name, "eats*" is the new relationship term, and "brain" is a term that is being related to your term. If the related term does not exist, add it here, denoted with a star(*). For example, NewTerm is_a NewRelationTerm*. Make sure to create a submission for any new relationship and relation terms.' ),
-    '#format' => 'plain_text'
   );
 
 if (isset($user->roles[$admin_rid]) or isset($user->roles[$onto_curator_rid])){
-  $form['status'] = array(
+  $form['sstatus'] = array(
     '#type' => t('select'),
     '#title' => t('Status'),
-    '#options' => array('Term Requested','Term in Review', 'Term Added to Ontology', 'Contact Author for Additional Information', 'Term Submission Incomplete', 'Term Submission Issues'),
-    '#default_value' => $status,
+    '#options' => array(0 => 'Term Requested',1 => 'Term in Review', 2 => 'Term Added to Ontology',3 =>  'Contact Author for Additional Information', 4 => 'Term Submission Incomplete', 5=>'Term Submission Issues'),
+    '#default_value' => $sstatus,
     '#description' => t('Select the appropriate term to indicate the workflow progress.'),
 
   );
@@ -324,9 +320,7 @@ if (isset($user->roles[$admin_rid]) or isset($user->roles[$onto_curator_rid])){
     '#title' => t('Status Notes'),
     '#default_value' => $status_notes,
     '#description' => t('Enter any notes about workflow progress.'),
-    '#format' => 'plain_text'
   );
-// $form['status_notes']['format']['#access'] = FALSE;
 }
      $sql = "SELECT distinct cvt.cvterm_id , cvt.name
          FROM {cvterm} cvt, {cv} cv
@@ -422,10 +416,24 @@ if (isset($user->roles[$admin_rid]) or isset($user->roles[$onto_curator_rid])){
   // return the form
 */
  $form['#after_build'][] = 'tripal_onto_term_submit_customize_comment_form';
- $form['definition']['#format'] = 'plain_text';
- // $form['definition']['format']['format']['#access']=FALSE;
+
   return $form;
 }
+
+
+function tripal_onto_term_submit_customize_comment_form(&$form) {
+  foreach (array('definition', 'term_xref' , 'definition_ref' , 'comments' , 'status_notes') as $field){
+
+    $form[$field]['format']['format']['#access']=FALSE;
+    $form[$field]['format']['format']['#default_value']='plain_text';
+    $form[$field]['format']['help']['#access']=FALSE;
+    $form[$field]['format']['guidelines']['#access']=FALSE;
+  }
+  //$form['defintion']['und'][0]['format']['#access'] = FALSE;
+  return $form;
+}
+
+
 
 /**
  * Implementation of hook_validate
@@ -444,21 +452,6 @@ if (isset($user->roles[$admin_rid]) or isset($user->roles[$onto_curator_rid])){
  *
  * @ingroup tripal_onto_term_submit
  */
-
-
-function tripal_onto_term_submit_customize_comment_form(&$form) {
-  foreach (array('definition', 'term_xref' , 'definition_ref' , 'comments' , 'status_notes') as $field){
-
-    $form[$field]['format']['format']['#access']=FALSE;
-    $form[$field]['format']['format']['#default_value']='plain_text';
-    $form[$field]['format']['help']['#access']=FALSE;
-    $form[$field]['format']['guidelines']['#access']=FALSE;
-  }
-  //$form['defintion']['und'][0]['format']['#access'] = FALSE;
-  return $form;
-}
-
-
 function chado_onto_term_submit_validate($node, $form, &$form_state) {
   // We only want to validate when the node is saved.
   // Since this validate can be called on AJAX and Deletion of the node
@@ -480,7 +473,6 @@ function chado_onto_term_submit_validate($node, $form, &$form_state) {
   // Validating for an update. If the 'nid' property is present in the node then
   // this is an update and validation can be different for updates
   if (property_exists($node, 'nid')) {
-
     // make sure the onto_term_submit type is an allowed term
     //$type_cv = tripal_get_default_cv('onto_term_submit', 'type_id');
     //$type = tripal_get_cvterm(array(
@@ -536,26 +528,25 @@ function chado_onto_term_submit_insert($node) {
     // be sure to always trim text fields
     $node->term_name   = trim($node->term_name);
     //$node->description  = property_exists('description', $node) : trim($node->description['value']) ? '';
-
     // get the onto_term_submit type record
     $type_cv = tripal_get_default_cv('onto_term_submit', 'type_id');
     $type = tripal_get_cvterm(array(
         'cv_id' => $node->onto_term_submit_type,
        // 'cv_id' => $type_cv->cv_id,
     ));
-
     // perform the insert using the chado_insert_record function();
     $values = array(
       'term_name' => $node->term_name,
       'definition' => $node->definition['value'],
       'type_id' => $node->onto_term_submit_type,
+      //'type_id' => $node->type_id->cv_id,
       'definition_ref' => $node->definition_ref['value'],
       'term_xref' => $node->term_xref['value'],
       'seealso_url' => $node->seealso_url,
       'contact_name' => $node->contact_name,
       'contact_email' => $node->contact_email,
       'comments' => $node->comments['value'],
-      'status' => $node->status,
+      'sstatus' => $node->sstatus,
       'status_notes' => $node->status_notes['value'],
     );
     $onto_term_submit = chado_insert_record('onto_term_submit', $values);
@@ -641,15 +632,23 @@ function chado_onto_term_submit_insert($node) {
  */
 function chado_onto_term_submit_update($node) {
   // be sure to always trim text fields
-  $node->term_name   = trim($node->term_name);
-  $node->definition  = trim($node->definition['value']);
   $onto_term_submit_id = chado_get_id_from_nid('onto_term_submit', $node->nid) ;
   // use the chado_update_record() function to update the record
   $match = array(
     'onto_term_submit_id' => $onto_term_submit_id,
   );
   $values = array(
-    'term_name' => $node->term_name,
+    'term_name' => trim($node->term_name),
+    'type_id' => $node->onto_term_submit_type ,
+    'sstatus' => $node->sstatus,
+    'term_xref' => trim($node->term_xref['value']),
+    'definition' => trim($node->definition['value']),
+    'definition_ref' => trim($node->definition_ref['value']),
+    'seealso_url' => trim($node->seealso_url),
+    'contact_name' => trim($node->contact_name),
+    'contact_email' => trim($node->contact_email),
+    'comments' => trim($node->comments['value']),
+    'status_notes' => trim($node->status_notes['value']),
   );
   $options = array('return_record' => TRUE);
   $update_status = chado_update_record('onto_term_submit', $match, $values, $options);
@@ -1239,11 +1238,79 @@ function tripal_onto_term_submit_add_node_form_properties(&$form, &$form_state, 
   );
 
   // the fieldset of the property elements
+
+$relations_expand = "<h4>Relationships allow for us to give terms context. They connect a term to other terms in either a physical or temporal maner.</h4>
+'develops from' is a relationship term with the following defintion, 'x develops from y if and only if either (a) x directly develops from y or (b) there exists some z such that x directly develops from z and z develops from y'. This relationship can be used to connect two physical terms, or more specifially anatomical terms.<br>
+<br>
+<u>Example:</u><br>
+<em>definitive epidermis</em> <u>develops from</u> <em>epidermal progenitor</em></a><br>
+<br>
+Whereas, 'existence ends at point', 'existence overlaps', 'existence starts at point', are relations that connects an anotomical terms to a temporal developmental stage (Stage 1-8, Asexual Adult, Juvenile, Sexually Mature Adult). When there is a definitive start ('existence starts at point') and end point ('existence ends at point'), these two stages should be denoted, as well as all of the stages in between (existence overlaps). If the anatomical feature is present throughout entire lifespan then no 'existence ends at point' is needed. 
+<br>
+<br>
+<u>Example:</u><br>
+<em>temporary embryonic pharynx</em> <strong>existence starts at point</strong> <em>Stage 2</em><br>
+<em>temporary embryonic pharynx</em> <strong>existence overlaps</strong> <em>Stage 3</em><br>
+<em>temporary embryonic pharynx</em> <strong>existence overlaps</strong> <em>Stage 4</em><br>
+<em>temporary embryonic pharynx</em> <strong>existence overlaps</strong> <em>Stage 5</em><br>
+<em>temporary embryonic pharynx</em> <strong>existence ends at point</strong> <em>Stage 6</em><br>
+<br>
+'has part' and 'part of' are relationships that help to describe how two terms are hierarchically related. A core relation that holds between a whole and its part and should be used reciprocally when possible.<br>
+<br>
+<u>Example:</u><br>
+<em>eye</em> <strong>has part</strong> <em>optic cup</em><br>
+<em>optic cup</em> <strong>part of</strong> <em>eye</em><br>
+<br>
+The Planarian Anatomy ontology is 'is_a' complete, meaning every term has a path to the root node by passing solely through 'is_a' relationships. This is the most basic relationship and you must provide at least one (or more) of these relationships upon term submission.<br>
+<br>
+<u>Example:</u><br>
+<em>blastema</em> <strong>is a</strong> <em>regenerating anatomical structure</em><br>
+<em>muscle cell</em> <strong>is a</strong> <em>terminally differentiated cell</em><br>
+<em>muscle cell</em> <strong>is a</strong> <em>electrically responsive cell</em><br>
+<em>muscle cell</em> <strong>is a</strong> <em>definitive cell type</em><br>
+<br>
+Some relationships describe the position of structure relative to another.<br> 
+'immediately_deep_to' and 'immediately_superficial_to' are specifically for immediately adjacent anatomical structures and should be used reciprocally.<br>
+<br>
+<u>Example:</u><br>
+<em>ventral epidermis</em> <strong>immediately superficial to</strong> <em>basal lamina of epithelium</em><br>
+<em>basal lamina of epithelium</em> <strong>immediately deep to</strong> <em>ventral epidermis</em><br> 
+<br>
+'posterior_to', defined as 'x posterior_to y if x is further along the antero-posterior axis than y, towards the body/tail. An antero-posterior axis is an axis that bisects an organism from head end to opposite end of body or tail.' This is used for broad terms of interest and is not meant to be exhaustive. Not ALL terms that are posterior to the new term need to be listed, just relations that are of interest.<br>
+<br>
+<u>Example:</u><br>
+<em>neck</em> <strong>posterior to</strong> <em>head</em><br>
+<br>
+There are also terms that define the production of other terms, such as 'produced by' and 'produces'. These are used for material anatomical entities and should be used reciprocally.<br>
+<br>
+<u>Example:</u><br>
+<em>oocyte</em> <strong>produced by</strong> <em>ovary</em><br>
+<em>ovary</em> <strong>produces</strong> <em>oocyte</em><br>
+<br>
+One relationship that enables features to be noted as being restricted to another anatomical is 'specific_to'.<br>
+Example:<br>
+<em>gonad</em> <strong>specific to</strong> <em>sexually mature adult</em><br>
+<br>
+'subdivision of' is defined as 'placeholder relation. X = 'subdivision of A' and subdivision_of some B means that X is the mereological sum of A and B'.<br>
+<br>
+<u>Example:</u><br>
+<em>oral hemisphere</em> <strong>subdivision of</strong> embryo</em>
+<em>aboral hemisphere</em> <strong>subdivision of</strong> <em>embryo</em><br><br>";
+
+  $collapse = theme(
+  'ctools_collapsible',
+  array(
+    'handle' => "Expand for more information on adding relationships",
+    'content' => $relations_expand,
+    'collapsed' => TRUE
+  )
+);
+
   $instructions = 'To add relationships to the new term, select the relationship type 
      from the first drop-down below and then select the relation from the second drop-down before 
       clicking "Add". To remove incorrect information, click the "Remove" button. 
       Note: you cannot edit previously added information but instead need to 
-      remove and re-add it. If you would like to use a relationship or relation term that is not listed, add them to the Comments field above. ';
+      remove and re-add it. If you would like to use a relationship or relation term that is not listed, add them to the Comments field above.<br>'.$collapse;
   $form['properties'] = array(
     '#type' => 'fieldset',
     '#title' => t($details['fieldset_title']),
@@ -1747,7 +1814,6 @@ function tripal_onto_term_submit_get_cvterm($cvterm_id){
   //$new_term['name']=$results[0]->name;
   //$new_term['definition']=$results[0]->definition;
   $new_term['definition']=$rt->definition;
-//dpm($new_term,$new_term['name']);
   }
   if (!empty($new_term)) {
      return $new_term;

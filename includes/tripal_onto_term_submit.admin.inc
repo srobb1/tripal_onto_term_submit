@@ -48,7 +48,6 @@ function tripal_onto_term_submit_admin_examples_listing() {
  * @ingroup tripal_onto_term_submit
  */
 function tripal_onto_term_submit_admin() {
-drupal_set_message("I amhere tripal_onto_term_submit_admin", 'warning');
   $form = array();
 
   $form['nothing'] = array(

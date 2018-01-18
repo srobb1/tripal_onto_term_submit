@@ -87,8 +87,7 @@ $rows[] = array(
 
 // Type row
 $statuses = array ('Term Requested','Term in Review', 'Term Added to Ontology', 'Contact Author for Additional Information', 'Term Submission Incomplete', 'Term Submission Issues');
-$status = $statuses[$onto_term_submit->status];
-dpm($onto_term_submit,'onto_term_submit-');
+$status = $statuses[$onto_term_submit->sstatus];
 $rows[] = array(
   array(
     'data' => 'Status',
