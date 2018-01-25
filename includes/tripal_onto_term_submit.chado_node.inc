@@ -129,7 +129,7 @@ function chado_onto_term_submit_form($node, &$form_state) {
   global $user;
   $form = array();
   $admin_rid = user_role_load_by_name('administrator')->rid; // admin want to also add ontology_curator
- // $onto_curator_rid = user_role_load_by_name('ontology_curator')->rid; // admin want to also add ontology_curator
+  $onto_curator_rid = user_role_load_by_name('ontology_curator')->rid; // admin want to also add ontology_curator
 
 
   // Default values can come in the following ways:

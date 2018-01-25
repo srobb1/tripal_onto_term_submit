@@ -97,7 +97,23 @@ function tripal_onto_term_submit_install() {
   // add any custom tables. For this case we will add an 'onto_term_submit' table to the
   // chado schema
   tripal_onto_term_submit_add_custom_tables();
+  tripal_onto_term_submit_create_curator_role();
 }
+
+function tripal_onto_term_submit_create_curator_role(){
+
+ $roles = array('ontology_curator');
+
+ foreach($roles as $name) {
+   $existing_role = user_role_load_by_name($name);
+   if (empty($existing_role)){
+      $role = new stdClass();
+       $role->name = $name;
+       user_role_save($role);
+    }
+  }
+}
+
 
 
 /**
@@ -108,6 +124,10 @@ function tripal_onto_term_submit_install() {
  * @ingroup tripal_onto_term_submit
  */
 function tripal_onto_term_submit_uninstall() {
+   
+    db_drop_table('chado.onto_term_submitprop');
+    db_drop_table('chado.onto_term_submit');
+     user_role_delete('ontology_curator')
 
 }
 
