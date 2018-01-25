@@ -363,3 +363,28 @@ function tripal_onto_term_submit_form_alter(&$form, &$form_state, $form_id) {
     unset($form['body']);
   }
 }
+
+
+
+function chado_onto_term_submit_chado_node_sync_form($form, &$form_state) {
+
+ if (isset($form_state['build_info']['args'][0])) {
+    $module = $form_state['build_info']['args'][0];
+    $node_type = $form_state['build_info']['args'][1];
+    $node_info = call_user_func($module . '_node_info');
+
+    // If a linking table is set in the node_info array then use that,
+    // otherwise ues the node_type as the linking table.
+    if (array_key_exists('linking_table', $node_info[$node_type]['chado_node_api'])) {
+      $linking_table = $node_info[$node_type]['chado_node_api']['linking_table'];
+    }
+    else {
+      $linking_table = 'chado_' . $node_info[$node_type]['chado_node_api']['base_table'];
+    }
+    $args = $node_info[$node_type]['chado_node_api'];
+    $form_state['chado_node_api'] = $args;
+  }
+$form['sync']['type_ids']=array();
+$form['sync']['organism_id']=array();
+return $form;
+  }
