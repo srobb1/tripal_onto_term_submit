@@ -2,6 +2,18 @@
 $onto_term_submit  = $variables['node']->onto_term_submit;
 ?>
 <div class="tripal_onto_term_submit-data-block-desc tripal-data-block-desc"></div> <?php
+
+print "<h3>This is a summary of the term submission.</h3>
+<ul>
+  <li>The status will be updated as progress is made on the review and addition of the term into the ontology.</li>
+  <li>Bookmark the URL of this page to return and check the status</li>
+  <li><a href=\"/ontology-term-submission\">Click</a> here to view all submissions.</li>
+</ul>";
+
+  global $user;
+  $admin_rid = user_role_load_by_name('administrator')->rid; 
+  $onto_curator_rid = user_role_load_by_name('ontology_curator')->rid; 
+
 // the $headers array is an array of fields to use as the column headers.
 // additional documentation can be found here
 // https://api.drupal.org/api/drupal/includes%21theme.inc/function/theme_table/7
@@ -78,11 +90,23 @@ $rows[] = array(
 // Type row
 $rows[] = array(
   array(
-    'data' => 'Contact',
+    'data' => 'Contact/Author',
     'header' => TRUE
   ),
-  "$onto_term_submit->contact_name $onto_term_submit->contact_email"
+  $onto_term_submit->contact_name
 );
+
+if (isset($user->roles[$admin_rid]) or isset($user->roles[$onto_curator_rid])){
+// Type row
+$rows[] = array(
+  array(
+    'data' => 'Contact Email',
+    'header' => TRUE
+  ),
+  $onto_term_submit->contact_email
+);
+}
+
 
 
 // Type row
