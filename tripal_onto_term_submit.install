@@ -127,7 +127,7 @@ function tripal_onto_term_submit_uninstall() {
    
     db_drop_table('chado.onto_term_submitprop');
     db_drop_table('chado.onto_term_submit');
-     user_role_delete('ontology_curator')
+     user_role_delete('ontology_curator');
 
 }
 
