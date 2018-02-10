@@ -51,14 +51,6 @@ $rows[] = array(
   $onto_term_submit->definition
 );
 
-// Type row
-$rows[] = array(
-  array(
-    'data' => 'Term Reference',
-    'header' => TRUE
-  ),
-  $onto_term_submit->term_xref
-);
 
 // Type row
 $rows[] = array(
@@ -67,6 +59,23 @@ $rows[] = array(
     'header' => TRUE
   ),
   $onto_term_submit->definition_ref
+);
+// Type row
+$rows[] = array(
+  array(
+    'data' => 'Term Ontology Reference',
+    'header' => TRUE
+  ),
+  $onto_term_submit->term_xref
+);
+
+// Type row
+$rows[] = array(
+  array(
+    'data' => 'Synonyms',
+    'header' => TRUE
+  ),
+  $onto_term_submit->syns
 );
 
 // Type row
@@ -121,6 +130,7 @@ $rows[] = array(
 //  $onto_term_submit->status
 );
 // Type row
+if (isset($user->roles[$admin_rid]) or isset($user->roles[$onto_curator_rid])){
 $rows[] = array(
   array(
     'data' => 'Status Notes',
@@ -128,7 +138,7 @@ $rows[] = array(
   ),
   $onto_term_submit->status_notes
 );
-
+}
 // allow site admins to see the onto_term_submit ID
 if (user_access('view ids')) {
   // Feature ID

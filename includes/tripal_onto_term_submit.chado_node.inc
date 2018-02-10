@@ -153,6 +153,7 @@ function chado_onto_term_submit_form($node, &$form_state) {
   $term_name   = '';
   $definition   = '';
   $definition_ref   = '';
+  $syns = ''; 
   $term_xref   = '';
   $onto_term_submit_type = '';
   $seealso_url  = '';
@@ -170,6 +171,7 @@ function chado_onto_term_submit_form($node, &$form_state) {
     $term_name   = $onto_term_submit->term_name;
     $definition  = $onto_term_submit->definition;
     $definition_ref  = $onto_term_submit->definition_ref;
+    $syns = $onto_term_submit->syns;
     $term_xref  = $onto_term_submit->term_xref;
     $onto_term_submit_type = $onto_term_submit->type_id->cv_id;
   $seealso_url  = $onto_term_submit->seealso_url;
@@ -191,6 +193,7 @@ function chado_onto_term_submit_form($node, &$form_state) {
      $term_name   = $form_state['values']['term_name'];
      $definition  = $form_state['values']['definition'];
      $definition_ref  = $form_state['values']['definition_ref'];
+     $syns = $form_state['values']['syns'];
      $term_xref  = $form_state['values']['term_xref'];
      $onto_term_submit_type = $form_state['values']['onto_term_submit_type'];
      $seealso_url  = $form_state['values']['seealso_url'];
@@ -206,6 +209,7 @@ function chado_onto_term_submit_form($node, &$form_state) {
      $term_name   = $form_state['input']['term_name'];
      $definition  = $form_state['input']['definition'];
      $definition_ref  = $form_state['input']['definition_ref'];
+     $syns = $form_state['input']['syns'];
      $term_xref  = $form_state['input']['term_xref'];
      $onto_term_submit_type = $form_state['input']['onto_term_submit_type'];
      $seealso_url  = $form_state['input']['seealso_url'];
@@ -224,7 +228,7 @@ function chado_onto_term_submit_form($node, &$form_state) {
     '#title' => t('Term Name'),
     '#required' => TRUE,
     '#default_value' => $term_name,
-    '#description' => t('Enter a new term name. If you want to suggest changes to an existing term, type existing term name followed by a star(*). For example, if you want to edit any part of the term "head" type head*'),
+    '#description' => t('REQUIRED. Enter a new term name. If you want to suggest changes to an existing term, type existing term name followed by a star(*). For example, if you want to edit any part of the term "head" type head*'),
     '#maxlength' => 255
   );
 
@@ -245,25 +249,17 @@ function chado_onto_term_submit_form($node, &$form_state) {
   $form['onto_term_submit_type'] = array(
     '#title'       => t('Term Library'),
     '#type'        => t('select'),
-    '#description' => t("Choose the library for which you would like to add a term."),
+    '#description' => t("REQUIRED. Choose the library for which you would like to add a term."),
     '#required'    => TRUE,
     '#options' => $libraries,
     '#default_value' => $onto_term_submit_type
   );
-  $form['term_xref'] = array(
-    '#type' => 'text_format',
-    '#title' => t('Term Reference'),
-    '#required' => TRUE,
-    '#default_value' => $definition_ref,
-    '#description' => t('Where was this term first published? Enter a PMID or a Ontology ID, i.e, UBERON:0000955, for the term. If a PMID does not exist, enter a citation. More than one PMID, Ontology ID,  or citation can be included.'),
-  );
-
   $form['definition'] = array(
     '#type' => 'text_format',
     '#title' => t('Definition'),
     '#required' => TRUE,
     '#default_value' => $definition,
-    '#description' => t('Enter a definition for this term.'),
+    '#description' => t('REQUIRED. Enter a definition for this term.'),
 
   ); 
 
@@ -272,14 +268,28 @@ function chado_onto_term_submit_form($node, &$form_state) {
     '#title' => t('Definition Reference'),
     '#required' => TRUE,
     '#default_value' => $definition_ref,
-    '#description' => t('Where was this definition first published? Enter a PMID, Ontology ID, or citation for this term. More than one can be included.'),
+    '#description' => t('REQUIRED. Where was this definition first published? Enter a PMID, Ontology ID, or citation for this term. More than one can be included.'),
   ); 
+  $form['term_xref'] = array(
+    '#type' => 'text_format',
+    '#title' => t('Term Ontology Reference'),
+    '#required' => FALSE,
+    '#default_value' => $term_xref,
+    '#description' => t('NOT REQUIRED. Does this term exist in another ontology? If so, please provide the Ontology ID, i.e, UBERON:0000955, for the term. If you do not know, leave blank. If you are curious, search <a href="http://www.ontobee.org/">Ontobee</a>'),
+  );
+  $form['syns'] = array(
+    '#type' => 'text_format',
+    '#title' => t('Term Synonyms'),
+    '#required' => FALSE,
+    '#default_value' => $syns,
+    '#description' => t('NOT REQUIRED. Are there any terms that have also been used to refer to this term'), 
+  );
 
   $form['seealso_url'] = array(
     '#type' => 'textfield',
     '#title' => t('More Informtion URL'),
     '#default_value' => $seealso_url,
-    '#description' => t('Enter a URL for more rich information for this term.  This page could contain images, suppplemenatry figures, or a more indepth write up. The URL should be on site you control, i.e, GitHub Repository or Lab Website. An example: https://planosphere.stowers.org/stage5'),
+    '#description' => t('NOT REQUIRED. Enter a URL for more rich information for this term.  This page could contain images, suppplemenatry figures, or a more indepth write up. The URL should be on site you control, i.e, GitHub Repository or Lab Website. An example: https://planosphere.stowers.org/stage5'),
     '#maxlength' => 255
   );
 
@@ -288,7 +298,7 @@ function chado_onto_term_submit_form($node, &$form_state) {
     '#title' => t('Your Name'),
     '#required' => TRUE,
     '#default_value' => $contact_name,
-    '#description' => t('Enter your name.'),
+    '#description' => t('REQUIRED. Enter your name.'),
   );
 
   $form['contact_email'] = array(
@@ -296,14 +306,14 @@ function chado_onto_term_submit_form($node, &$form_state) {
     '#title' => t('Your E-mail address'),
     '#required' => TRUE,
     '#default_value' => $contact_email,
-    '#description' => t('Enter your email address for us to contact you about this submission.'),
+    '#description' => t('REQUIRED. Enter your email address for us to contact you about this submission.'),
   );
 
   $form['comments'] = array(
     '#type' => 'text_format',
     '#title' => t('Any Comments'),
     '#default_value' => $comments,
-    '#description' => t('Enter any comments about this term or submission. If a relationship (see below) term does not exist, add it here, denoted with a star(*). For example, NewTerm eats* brain. "NewTerm" is your new term name, "eats*" is the new relationship term, and "brain" is a term that is being related to your term. If the related term does not exist, add it here, denoted with a star(*). For example, NewTerm is_a NewRelationTerm*. Make sure to create a submission for any new relationship and relation terms.' ),
+    '#description' => t('NOT REQUIRED. Enter any comments about this term or submission.' ),
   );
 
 if (isset($user->roles[$admin_rid]) or isset($user->roles[$onto_curator_rid])){
@@ -422,7 +432,7 @@ if (isset($user->roles[$admin_rid]) or isset($user->roles[$onto_curator_rid])){
 
 
 function tripal_onto_term_submit_customize_comment_form(&$form) {
-  foreach (array('definition', 'term_xref' , 'definition_ref' , 'comments' , 'status_notes') as $field){
+  foreach (array('definition', 'term_xref' , 'definition_ref' , 'syns', 'comments' , 'status_notes') as $field){
 
     $form[$field]['format']['format']['#access']=FALSE;
     $form[$field]['format']['format']['#default_value']='plain_text';
@@ -541,6 +551,7 @@ function chado_onto_term_submit_insert($node) {
       'type_id' => $node->onto_term_submit_type,
       //'type_id' => $node->type_id->cv_id,
       'definition_ref' => $node->definition_ref['value'],
+      'syns' => $node->syns['value'],
       'term_xref' => $node->term_xref['value'],
       'seealso_url' => $node->seealso_url,
       'contact_name' => $node->contact_name,
@@ -644,6 +655,7 @@ function chado_onto_term_submit_update($node) {
     'term_xref' => trim($node->term_xref['value']),
     'definition' => trim($node->definition['value']),
     'definition_ref' => trim($node->definition_ref['value']),
+     'syns' => trim($node->syns['value']),
     'seealso_url' => trim($node->seealso_url),
     'contact_name' => trim($node->contact_name),
     'contact_email' => trim($node->contact_email),
@@ -770,6 +782,7 @@ function chado_onto_term_submit_load($nodes) {
     // should be included by using this function in the templates.
     $onto_term_submit = chado_expand_var($onto_term_submit, 'field', 'onto_term_submit.definition');
     $onto_term_submit = chado_expand_var($onto_term_submit, 'field', 'onto_term_submit.definition_ref');
+    $onto_term_submit = chado_expand_var($onto_term_submit, 'field', 'onto_term_submit.syns');
     $onto_term_submit = chado_expand_var($onto_term_submit, 'field', 'onto_term_submit.term_xref');
     $onto_term_submit = chado_expand_var($onto_term_submit, 'field', 'onto_term_submit.seealso_url');
     $onto_term_submit = chado_expand_var($onto_term_submit, 'field', 'onto_term_submit.contact_name');
@@ -1239,63 +1252,100 @@ function tripal_onto_term_submit_add_node_form_properties(&$form, &$form_state, 
 
   // the fieldset of the property elements
 
-$relations_expand = "<h4>Relationships allow for us to give terms context. They connect a term to other terms in either a physical or temporal maner.</h4>
+$relations_expand = "<br><h4>Relationships allow for us to give terms context. They connect a term to other terms in either a physical or temporal manner.</h4>
+<br>
+<strong>develops from</strong><br>
+<hr>
 'develops from' is a relationship term with the following defintion, 'x develops from y if and only if either (a) x directly develops from y or (b) there exists some z such that x directly develops from z and z develops from y'. This relationship can be used to connect two physical terms, or more specifially anatomical terms.<br>
 <br>
-<u>Example:</u><br>
-<em>definitive epidermis</em> <u>develops from</u> <em>epidermal progenitor</em></a><br>
 <br>
-Whereas, 'existence ends at point', 'existence overlaps', 'existence starts at point', are relations that connects an anotomical terms to a temporal developmental stage (Stage 1-8, Asexual Adult, Juvenile, Sexually Mature Adult). When there is a definitive start ('existence starts at point') and end point ('existence ends at point'), these two stages should be denoted, as well as all of the stages in between (existence overlaps). If the anatomical feature is present throughout entire lifespan then no 'existence ends at point' is needed. 
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<u>Example:</u><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>definitive epidermis</em> <strong>develops from</strong> <em>epidermal progenitor</em></a><br>
 <br>
 <br>
-<u>Example:</u><br>
-<em>temporary embryonic pharynx</em> <strong>existence starts at point</strong> <em>Stage 2</em><br>
-<em>temporary embryonic pharynx</em> <strong>existence overlaps</strong> <em>Stage 3</em><br>
-<em>temporary embryonic pharynx</em> <strong>existence overlaps</strong> <em>Stage 4</em><br>
-<em>temporary embryonic pharynx</em> <strong>existence overlaps</strong> <em>Stage 5</em><br>
-<em>temporary embryonic pharynx</em> <strong>existence ends at point</strong> <em>Stage 6</em><br>
+<strong>existence starts at point<br>existence overlaps<br>existence ends at point</strong><br>
+<hr>
+'existence starts at point', 'existence overlaps', and 'existence ends at point' are relations that connect anatomical terms to a temporal developmental stage (Stage 1-8, Asexual Adult, Juvenile, Sexually Mature Adult). When there is a definitive start ('existence starts at point') and end point ('existence ends at point'), these two stages should be denoted, as well as all of the stages in between (existence overlaps). If the anatomical feature is present throughout entire lifespan then no 'existence ends at point' is needed.<br> 
 <br>
-'has part' and 'part of' are relationships that help to describe how two terms are hierarchically related. A core relation that holds between a whole and its part and should be used reciprocally when possible.<br>
 <br>
-<u>Example:</u><br>
-<em>eye</em> <strong>has part</strong> <em>optic cup</em><br>
-<em>optic cup</em> <strong>part of</strong> <em>eye</em><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<u>Example:</u><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>temporary embryonic pharynx</em> <strong>existence starts at point</strong> <em>Stage 2</em><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>temporary embryonic pharynx</em> <strong>existence overlaps</strong> <em>Stage 3</em><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>temporary embryonic pharynx</em> <strong>existence overlaps</strong> <em>Stage 4</em><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>temporary embryonic pharynx</em> <strong>existence overlaps</strong> <em>Stage 5</em><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>temporary embryonic pharynx</em> <strong>existence ends at point</strong> <em>Stage 6</em><br>
 <br>
-The Planarian Anatomy ontology is 'is_a' complete, meaning every term has a path to the root node by passing solely through 'is_a' relationships. This is the most basic relationship and you must provide at least one (or more) of these relationships upon term submission.<br>
 <br>
-<u>Example:</u><br>
-<em>blastema</em> <strong>is a</strong> <em>regenerating anatomical structure</em><br>
-<em>muscle cell</em> <strong>is a</strong> <em>terminally differentiated cell</em><br>
-<em>muscle cell</em> <strong>is a</strong> <em>electrically responsive cell</em><br>
-<em>muscle cell</em> <strong>is a</strong> <em>definitive cell type</em><br>
+<strong>is a<br>part of</strong><br>
+<hr>
+The Planarian Anatomy Ontology is 'is a' and 'part of' complete, meaning every term has a path to the root node by passing solely through these relationships. These are the most basic relationships and are mutually exclusive. You must provide one of these relationships upon term submission.<br>
 <br>
-Some relationships describe the position of structure relative to another.<br> 
-'immediately_deep_to' and 'immediately_superficial_to' are specifically for immediately adjacent anatomical structures and should be used reciprocally.<br>
 <br>
-<u>Example:</u><br>
-<em>ventral epidermis</em> <strong>immediately superficial to</strong> <em>basal lamina of epithelium</em><br>
-<em>basal lamina of epithelium</em> <strong>immediately deep to</strong> <em>ventral epidermis</em><br> 
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<u>Example:</u><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>blastema</em> <strong>is a</strong> <em>regenerating anatomical structure</em><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>muscle cell</em> <strong>is a</strong> <em>terminally differentiated cell</em><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>muscle cell</em> <strong>is a</strong> <em>electrically responsive cell</em><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>muscle cell</em> <strong>is a</strong> <em>definitive cell type</em><br>
 <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>zeta neoblast</em> <strong>part of</strong> <em>neoblast compartment</em><br>
+<br>
+<br>
+<strong>has part<br>part of</strong><br>
+<hr>
+'has part' and 'part of' are relationships that help to describe how two terms are hierarchically related.  They are core relations that hold between a whole and its part, as such, should be used reciprocally when possible.<br>
+<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<u>Example:</u><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>eye</em> <strong>has part</strong> <em>optic cup</em><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>optic cup</em> <strong>part of</strong> <em>eye</em><br>
+<br>
+<br>
+<strong>immediately deep to<br>immediately superficial to</strong><br>
+<hr>
+Some relationships describe the position of structure relative to another.  'immediately deep to' and 'immediately superficial to' are specifically for immediately adjacent anatomical structures and should be used reciprocally.<br>
+<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<u>Example:</u><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>ventral epidermis</em> <strong>immediately superficial to</strong> <em>basal lamina of epithelium</em><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>basal lamina of epithelium</em> <strong>immediately deep to</strong> <em>ventral epidermis</em><br> 
+<br>
+<br>
+<strong>posterior to</strong><br>
+<hr>
 'posterior_to', defined as 'x posterior_to y if x is further along the antero-posterior axis than y, towards the body/tail. An antero-posterior axis is an axis that bisects an organism from head end to opposite end of body or tail.' This is used for broad terms of interest and is not meant to be exhaustive. Not ALL terms that are posterior to the new term need to be listed, just relations that are of interest.<br>
 <br>
-<u>Example:</u><br>
-<em>neck</em> <strong>posterior to</strong> <em>head</em><br>
 <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<u>Example:</u><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>neck</em> <strong>posterior to</strong> <em>head</em><br>
+<br>
+<br>
+<strong>produced by<br>produces</strong><br>
+<hr>
 There are also terms that define the production of other terms, such as 'produced by' and 'produces'. These are used for material anatomical entities and should be used reciprocally.<br>
 <br>
-<u>Example:</u><br>
-<em>oocyte</em> <strong>produced by</strong> <em>ovary</em><br>
-<em>ovary</em> <strong>produces</strong> <em>oocyte</em><br>
 <br>
-One relationship that enables features to be noted as being restricted to another anatomical is 'specific_to'.<br>
-Example:<br>
-<em>gonad</em> <strong>specific to</strong> <em>sexually mature adult</em><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<u>Example:</u><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>oocyte</em> <strong>produced by</strong> <em>ovary</em><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>ovary</em> <strong>produces</strong> <em>oocyte</em><br>
 <br>
+<br>
+<strong>specific to</strong><br>
+<hr>
+One relationship that enables features to be noted as being restricted to another anatomical term is 'specific to'.<br>
+<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<u>Example:</u><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>gonad</em> <strong>specific to</strong> <em>sexually mature adult</em><br>
+<br>
+<br>
+<strong>subdivision of</strong><br>
+ <hr>
 'subdivision of' is defined as 'placeholder relation. X = 'subdivision of A' and subdivision_of some B means that X is the mereological sum of A and B'.<br>
 <br>
-<u>Example:</u><br>
-<em>oral hemisphere</em> <strong>subdivision of</strong> embryo</em>
-<em>aboral hemisphere</em> <strong>subdivision of</strong> <em>embryo</em><br><br>";
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<u>Example:</u><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>oral hemisphere</em> <strong>subdivision of</strong> embryo</em><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>aboral hemisphere</em> <strong>subdivision of</strong> <em>embryo</em><br><br><br>";
 
   $collapse = theme(
   'ctools_collapsible',
@@ -1305,6 +1355,7 @@ Example:<br>
     'collapsed' => TRUE
   )
 );
+//If a relationship (see below) term does not exist, add it here, denoted with a star(*). For example, NewTerm eats* brain. "NewTerm" is your new term name, "eats*" is the new relationship term, and "brain" is a term that is being related to your term. If the related term does not exist, add it here, denoted with a star(*). For example, NewTerm is_a NewRelationTerm*. Make sure to create a submission for any new relationship and relation terms.
 
   $instructions = 'To add relationships to the new term, select the relationship type 
      from the first drop-down below and then select the relation from the second drop-down before 

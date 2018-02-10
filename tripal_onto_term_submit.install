@@ -308,6 +308,11 @@ function tripal_onto_term_submit_add_onto_term_submit_table() {
         'type' => 'text',
         'not null' => TRUE,
       ),
+      'syns' => array(
+        'type' => 'varchar',
+        'length' => '255',
+        'not null' => TRUE,
+      ),
       'definition_ref' => array(
         'type' => 'varchar',
         'length' => '255',
